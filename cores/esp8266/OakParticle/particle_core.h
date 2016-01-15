@@ -3,6 +3,8 @@
 
 #include "particle.h"
 
+namespace ParticleCore {
+	
 typedef std::function<bool(const void*, SparkReturnType::Enum)> FunctionResultCallback;
 
 int call_raw_user_function(void* data, const char* param, void* reserved);
@@ -215,5 +217,6 @@ bool spark_connect();
 
 void spark_process();
 
+}; // ParticleCore
 
 #endif // particle_core_h

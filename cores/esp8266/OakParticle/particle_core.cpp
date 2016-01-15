@@ -1,12 +1,6 @@
 #include "particle_core.h"
 
 char OAK_SYSTEM_VERSION_STRING[5] = {"1.00"};
-#define PROTOCOL_BUFFER_SIZE 800
-#define QUEUE_SIZE 800
-unsigned char queue[PROTOCOL_BUFFER_SIZE];
-
-typedef unsigned short uint16_t;
-typedef uint16_t chunk_index_t;
 
 //#include <Arduino.h>
 #include "../ESP8266WiFi/src/ESP8266WiFi.h"
@@ -20,8 +14,6 @@ typedef uint16_t chunk_index_t;
 #include "appender.h"
 #include "file_transfer.h"
 #include "crc32.h"
-
-WiFiClient pClient; 
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,7 +29,19 @@ extern "C" {
 #endif
 
 
- typedef struct {
+namespace ParticleCore {
+
+#define PROTOCOL_BUFFER_SIZE 800
+#define QUEUE_SIZE 800
+
+WiFiClient pClient; 
+
+typedef unsigned short uint16_t;
+typedef uint16_t chunk_index_t;
+
+unsigned char queue[PROTOCOL_BUFFER_SIZE];
+
+typedef struct {
   //can cut off here if needed
   char device_id[25];     //device id in hex
   char claim_code[65];   // server public key
@@ -2623,4 +2627,4 @@ void spark_process()
 }
 
 
-
+}; // ParticleCore

@@ -2,6 +2,9 @@
 #include "particle_core.h"
 #include "OakParticle.h"
 
+using namespace ParticleCore;
+
+
 CloudClass::CloudClass(){
     spark_initConfig();
 }
