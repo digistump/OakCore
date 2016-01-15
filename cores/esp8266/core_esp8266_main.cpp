@@ -24,6 +24,7 @@
 //#define CONT_STACKSIZE 4096
 #include <Arduino.h>
 #include "../../libraries/ESP8266WiFi/src/ESP8266WiFi.h"
+#include "../../libraries/OakParticle/Oak.h"
 #include "../../libraries/OakParticle/OakParticle.h"
 
 extern "C" {
