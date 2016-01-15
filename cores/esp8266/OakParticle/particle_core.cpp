@@ -8,8 +8,8 @@ unsigned char queue[PROTOCOL_BUFFER_SIZE];
 typedef unsigned short uint16_t;
 typedef uint16_t chunk_index_t;
 
-#include <Arduino.h>
-#include "../ESP8266WiFi/src/ESP8266WiFi.h"
+//#include <Arduino.h>
+#include "../../../libraries/ESP8266WiFi/src/ESP8266WiFi.h"
 #include "handshake.h"
 #include "messages.h"
 #include "coap.h"
