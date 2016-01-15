@@ -1,8 +1,6 @@
 
 #include "Oak.h"
-
-extern void rebootToUser();
-extern void rebootToConfig();
+#include "particle_core.h"
 
 void OakClass::rebootToUser(void) { rebootToUser(); }
 void OakClass::rebootToConfig(void) { rebootToConfig(); }
