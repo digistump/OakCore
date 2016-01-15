@@ -2,7 +2,7 @@
 #include "particle_core.h"
 #include "OakParticle.h"
 
-using namespace ParticleCore;
+using namespace particle_core;
 
 
 CloudClass::CloudClass(){

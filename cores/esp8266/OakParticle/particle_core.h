@@ -3,7 +3,7 @@
 
 #include "particle.h"
 
-namespace ParticleCore {
+namespace particle_core {
 	
 typedef std::function<bool(const void*, SparkReturnType::Enum)> FunctionResultCallback;
 
@@ -217,6 +217,6 @@ bool spark_connect();
 
 void spark_process();
 
-}; // ParticleCore
+}; // particle_core
 
 #endif // particle_core_h

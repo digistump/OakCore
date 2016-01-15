@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 
-namespace ParticleCore {
+namespace particle_core {
 
 #define PROTOCOL_BUFFER_SIZE 800
 #define QUEUE_SIZE 800
@@ -2627,4 +2627,4 @@ void spark_process()
 }
 
 
-}; // ParticleCore
+}; // particle_core

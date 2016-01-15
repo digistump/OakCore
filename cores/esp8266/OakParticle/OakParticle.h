@@ -39,85 +39,85 @@ public:
 
     static inline bool variable(const char* varKey, const int& var)
     {
-        return variable(varKey, &var, ParticleCore::INT);
+        return variable(varKey, &var, particle_core::INT);
     }
     static inline bool variable(const char* varKey, const uint32_t& var)
     {
-        return variable(varKey, &var, ParticleCore::INT);
+        return variable(varKey, &var, particle_core::INT);
     }
 
     static inline bool variable(const char* varKey, const double& var)
     {
-        return variable(varKey, &var, ParticleCore::DOUBLE);
+        return variable(varKey, &var, particle_core::DOUBLE);
     }
 
     static inline bool variable(const char* varKey, const String& var)
     {
-        return variable(varKey, &var, ParticleCore::STRING);
+        return variable(varKey, &var, particle_core::STRING);
     }
 
     static inline bool variable(const char* varKey, const char* var)
     {
-        return variable(varKey, var, ParticleCore::STRING);
+        return variable(varKey, var, particle_core::STRING);
     }
 
     template<std::size_t N>
     static inline bool variable(const char* varKey, const char var[N])
     {
-        return variable(varKey, var, ParticleCore::STRING);
+        return variable(varKey, var, particle_core::STRING);
     }
 
     template<std::size_t N>
     static inline bool variable(const char* varKey, const unsigned char var[N])
     {
-        return variable(varKey, var, ParticleCore::STRING);
+        return variable(varKey, var, particle_core::STRING);
     }
 
-    static inline bool variable(const char *varKey, const uint8_t* userVar, const ParticleCore::CloudVariableTypeString& userVarType)
+    static inline bool variable(const char *varKey, const uint8_t* userVar, const particle_core::CloudVariableTypeString& userVarType)
     {
         return variable(varKey, (const char*)userVar, userVarType);
     }
 
     template<typename T> static bool variable(const char *varKey, const typename T::varref userVar, const T& userVarType);
 
-    static bool variable(const char *varKey, const int32_t* userVar, const ParticleCore::CloudVariableTypeInt& userVarType);
-    static bool variable(const char *varKey, const uint32_t* userVar, const ParticleCore::CloudVariableTypeInt& userVarType);
+    static bool variable(const char *varKey, const int32_t* userVar, const particle_core::CloudVariableTypeInt& userVarType);
+    static bool variable(const char *varKey, const uint32_t* userVar, const particle_core::CloudVariableTypeInt& userVarType);
 
     // Return clear errors for common misuses of Particle.variable()
     template<typename T, std::size_t N>
-    static inline bool variable(const char *varKey, const T (*userVar)[N], const ParticleCore::CloudVariableTypeString& userVarType)
+    static inline bool variable(const char *varKey, const T (*userVar)[N], const particle_core::CloudVariableTypeString& userVarType)
     {
         static_assert(sizeof(T)==0, "\n\nUse Particle.variable(\"name\", myVar, STRING); without & in front of myVar\n\n");
         return false;
     }
 
     template<typename T>
-    static bool variable(const T *varKey, const String *userVar, const ParticleCore::CloudVariableTypeString& userVarType);
+    static bool variable(const T *varKey, const String *userVar, const particle_core::CloudVariableTypeString& userVarType);
 
     template<typename T>
-    static inline bool variable(const T *varKey, const String &userVar, const ParticleCore::CloudVariableTypeString& userVarType)
+    static inline bool variable(const T *varKey, const String &userVar, const particle_core::CloudVariableTypeString& userVarType)
     {
         static_assert(sizeof(T)==0, "\n\nIn Particle.variable(\"name\", myVar, STRING); myVar must be declared as char myVar[] not String myVar\n\n");
         return false;
     }
 
-    static bool function(const char *funcKey, ParticleCore::user_function_int_str_t* func);
-    static bool function(const char *funcKey, ParticleCore::user_std_function_int_str_t func, void* reserved=NULL);
+    static bool function(const char *funcKey, particle_core::user_function_int_str_t* func);
+    static bool function(const char *funcKey, particle_core::user_std_function_int_str_t func, void* reserved=NULL);
 
     template <typename T>
     static void function(const char *funcKey, int (T::*func)(String), T *instance);
 
-    bool publish(const char *eventName, ParticleCore::Spark_Event_TypeDef eventType=ParticleCore::PUBLIC);
-    bool publish(const char *eventName, const char *eventData, ParticleCore::Spark_Event_TypeDef eventType=ParticleCore::PUBLIC);
-    bool publish(const char *eventName, const char *eventData, int ttl, ParticleCore::Spark_Event_TypeDef eventType=ParticleCore::PUBLIC);
+    bool publish(const char *eventName, particle_core::Spark_Event_TypeDef eventType=particle_core::PUBLIC);
+    bool publish(const char *eventName, const char *eventData, particle_core::Spark_Event_TypeDef eventType=particle_core::PUBLIC);
+    bool publish(const char *eventName, const char *eventData, int ttl, particle_core::Spark_Event_TypeDef eventType=particle_core::PUBLIC);
 
-    bool subscribe(const char *eventName, EventHandler handler, ParticleCore::Spark_Subscription_Scope_TypeDef scope=ParticleCore::ALL_DEVICES);
+    bool subscribe(const char *eventName, EventHandler handler, particle_core::Spark_Subscription_Scope_TypeDef scope=particle_core::ALL_DEVICES);
     bool subscribe(const char *eventName, EventHandler handler, const char *deviceID);
-    bool subscribe(const char *eventName, ParticleCore::wiring_event_handler_t handler, ParticleCore::Spark_Subscription_Scope_TypeDef scope=ParticleCore::ALL_DEVICES);
-    bool subscribe(const char *eventName, ParticleCore::wiring_event_handler_t handler, const char *deviceID);
+    bool subscribe(const char *eventName, particle_core::wiring_event_handler_t handler, particle_core::Spark_Subscription_Scope_TypeDef scope=particle_core::ALL_DEVICES);
+    bool subscribe(const char *eventName, particle_core::wiring_event_handler_t handler, const char *deviceID);
 
     template <typename T>
-    bool subscribe(const char *eventName, void (T::*handler)(const char *, const char *), T *instance, ParticleCore::Spark_Subscription_Scope_TypeDef scope=ParticleCore::ALL_DEVICES);
+    bool subscribe(const char *eventName, void (T::*handler)(const char *, const char *), T *instance, particle_core::Spark_Subscription_Scope_TypeDef scope=particle_core::ALL_DEVICES);
     template <typename T>
     bool subscribe(const char *eventName, void (T::*handler)(const char *, const char *), T *instance, const char *deviceID);
 
@@ -148,9 +148,9 @@ private:
 
     //static void call_wiring_event_handler(const void* param, const char *event_name, const char *data);
 
-    bool subscribe_wiring(const char *eventName, ParticleCore::wiring_event_handler_t handler, ParticleCore::Spark_Subscription_Scope_TypeDef scope, const char *deviceID = NULL);
+    bool subscribe_wiring(const char *eventName, particle_core::wiring_event_handler_t handler, particle_core::Spark_Subscription_Scope_TypeDef scope, const char *deviceID = NULL);
 
-    static const void* update_string_variable(const char* name, ParticleCore::Spark_Data_TypeDef type, const void* var, void* reserved);
+    static const void* update_string_variable(const char* name, particle_core::Spark_Data_TypeDef type, const void* var, void* reserved);
 };
 
 extern CloudClass Particle;

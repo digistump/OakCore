@@ -2,7 +2,7 @@
 #include "Oak.h"
 #include "particle_core.h"
 
-using namespace ParticleCore;
+using namespace particle_core;
 
 
 void OakClass::rebootToUser(void) { 

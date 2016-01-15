@@ -10,7 +10,7 @@
 #define OAK_SYSTEM_VERSION 1
 extern char OAK_SYSTEM_VERSION_STRING[];
 
-namespace ParticleCore {
+namespace particle_core {
 
 typedef int (user_function_int_str_t)(String paramString);
 typedef user_function_int_str_t* p_user_function_int_str_t;
@@ -99,6 +99,6 @@ namespace SparkReturnType {
   };
 }
 
-}; // ParticleCore
+}; // particle_core
 
 #endif // particle_h
