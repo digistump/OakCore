@@ -25,6 +25,7 @@
 
 #include <cstring>
 #include "particle.h"
+#include "Stream.h"
 
 #ifdef SPARK_NO_CLOUD
 #define CLOUD_FN(x,y) (y)
@@ -33,7 +34,7 @@
 #endif
 
 
-class CloudClass {
+class CloudClass : public Stream {
 public:
     CloudClass();
 
@@ -124,6 +125,14 @@ public:
     void unsubscribe();
 
     bool syncTime(void);
+    
+    void begin();
+    size_t write(uint8_t);
+    int available();
+    int read();
+    int peek();
+    void flush();
+    void end();
 /*
     static void sleep(long seconds) __attribute__ ((deprecated("Please use System.sleep() instead.")))
     { SystemClass::sleep(seconds); }
@@ -141,7 +150,6 @@ public:
     static String deviceID(void);
 
 private:
-
     //static bool register_function(cloud_function_t fn, void* data, const char* funcKey);
     //static int call_raw_user_function(void* data, const char* param, void* reserved);
     //static int call_std_user_function(void* data, const char* param, void* reserved);

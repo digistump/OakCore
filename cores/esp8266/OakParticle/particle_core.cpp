@@ -2586,38 +2586,127 @@ bool spark_connect(){
   return false;
 }
 
-/*
-void spark_send_tx(){
-  if(spark_transmit_buffer_tail == spark_transmit_buffer_head)
-    return;
-  uint8_t buffer_length = (spark_transmit_buffer_tail + MAX_BUFF - spark_transmit_buffer_head) % MAX_BUFF;
-  char buff[buffer_length];
+void spark_serial_begin(){
+    //don't allocate buffers until this is called
+    spark_receive_buffer = new char[MAX_SERIAL_BUFF];
+    spark_transmit_buffer = new char[MAX_SERIAL_BUFF];
+    spark_subscribe("oak/device/stdin", spark_get_rx, NULL, MY_DEVICES, NULL, NULL);
 
-  for(uint8_t b;b<buffer_length;b++){
-    // Read from "head"
-    buff[b] = spark_transmit_buffer[spark_transmit_buffer_head]; // grab next byte
-    spark_transmit_buffer_head = (spark_transmit_buffer_head + 1) % MAX_BUFF;
-  }
-
-  //Particle.publish("oak/device/stdout", buff, 60, PRIVATE); 
-  spark_send_event("oak/device/stdout", buff, 60, PRIVATE, NULL); 
 }
-*/
 
+void spark_serial_end()
+{
+    //de-allocate buffers here
+    delete[] spark_receive_buffer;
+    spark_receive_buffer = NULL;
+    delete[] spark_transmit_buffer;
+    spark_transmit_buffer = NULL;
+}
+
+// Read data from buffer
+int spark_serial_read()
+{
+    // Empty buffer?
+    if (spark_receive_buffer_head == spark_receive_buffer_tail)
+        return -1;
+
+    // Read from "head"
+    uint8_t d = spark_receive_buffer[spark_receive_buffer_head]; // grab next byte
+    spark_receive_buffer_head = (spark_receive_buffer_head + 1) % MAX_SERIAL_BUFF;
+    return d;
+}
+
+int spark_serial_available()
+{
+    return (spark_receive_buffer_tail + MAX_SERIAL_BUFF - spark_receive_buffer_head) % MAX_SERIAL_BUFF;
+}
+
+size_t spark_serial_write(uint8_t b)
+{
+    // if buffer full, set the overflow flag and return
+    uint8_t next = (spark_transmit_buffer_tail + 1) % MAX_SERIAL_BUFF;
+    if (next != spark_transmit_buffer_head)
+    {
+      // save new data in buffer: tail points to where byte goes
+      spark_transmit_buffer[spark_transmit_buffer_tail] = b; // save new byte
+      spark_transmit_buffer_tail = next;
+      return 1;
+    } 
+    else 
+    {
+      spark_buffer_overflow = true;
+      return 0;
+    }
+}
+
+void spark_serial_flush()
+{
+    spark_transmit_buffer_tail = spark_transmit_buffer_head;
+}
+
+int spark_serial_peek()
+{
+    // Empty buffer?
+    if (spark_receive_buffer_head == spark_receive_buffer_tail)
+        return -1;
+
+    // Read from "head"
+    return spark_receive_buffer[spark_receive_buffer_head];
+}
+
+
+void spark_get_rx(const char* name, const char* data){ //this is automatically called when new data comes from the cloud
+    if (data && *data) {
+
+        while(*data != '\0'){
+            // if buffer full, set the overflow flag and return
+            uint8_t next = (spark_receive_buffer_tail + 1) % MAX_SERIAL_BUFF;
+            if (next != spark_receive_buffer_head)
+            {
+            // save new data in buffer: tail points to where byte goes
+                spark_receive_buffer[spark_receive_buffer_tail] = *data; // save new byte
+                data++;
+                spark_receive_buffer_tail = next;
+            } 
+            else 
+            {
+                spark_buffer_overflow = true;
+                return;
+            }
+        }
+
+    }
+}
+
+void spark_send_tx(){
+
+    if(spark_transmit_buffer_tail == spark_transmit_buffer_head)//nothing buffer
+        return;
+    uint8_t buffer_length = (spark_transmit_buffer_tail + MAX_SERIAL_BUFF - spark_transmit_buffer_head) % MAX_SERIAL_BUFF;
+    char buff[buffer_length];
+
+    for(uint8_t b;b<buffer_length;b++){
+        // Read from "head"
+        buff[b] = spark_transmit_buffer[spark_transmit_buffer_head]; // grab next byte
+        spark_transmit_buffer_head = (spark_transmit_buffer_head + 1) % MAX_SERIAL_BUFF;
+    }
+
+    spark_send_event("oak/device/stdout", buff, 60, PRIVATE, NULL);
+}
 
 void spark_process()
 {
-  yield();
+    yield();
     if(spark_connected()){
-      //spark_send_tx();
-      if(!event_loop()){
-        spark_disconnect();
-        ERROR("EVENT LOOP FAIL!");
-        return;
-      }
+        spark_send_tx();
+        if(!event_loop()){
+            spark_disconnect();
+            ERROR("EVENT LOOP FAIL!");
+            return;
+        }
     }
     else{
-      spark_connect();
+        spark_connect();
     }
     lastCloudEvent = millis();
 }

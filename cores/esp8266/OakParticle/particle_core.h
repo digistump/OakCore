@@ -213,7 +213,30 @@ bool spark_internal_connect();
 
 bool spark_connect();
 
+//Spark Serial
+#define MAX_SERIAL_BUFF 256
+
+char* spark_receive_buffer = NULL;
+char* spark_transmit_buffer = NULL;
+
+volatile uint8_t spark_receive_buffer_tail = 0;
+volatile uint8_t spark_receive_buffer_head = 0;
+volatile uint8_t spark_transmit_buffer_tail = 0;
+volatile uint8_t spark_transmit_buffer_head = 0;
+volatile uint8_t spark_listening;
+volatile uint8_t spark_buffer_overflow;
+
+void spark_serial_begin();
+void spark_serial_end();
+int spark_serial_read();
+int spark_serial_available();
+size_t spark_serial_write(uint8_t b);
+void spark_serial_flush();
+int spark_serial_peek();
+void spark_get_rx(const char* name, const char* data);
+void spark_send_tx();
 void spark_process();
+
 
 
 #endif // particle_core_h
