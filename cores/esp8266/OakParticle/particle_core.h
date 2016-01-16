@@ -215,8 +215,19 @@ bool spark_internal_connect();
 
 bool spark_connect();
 
+//Spark Serial
+void spark_serial_begin();
+void spark_serial_end();
+int spark_serial_read();
+int spark_serial_available();
+size_t spark_serial_write(uint8_t b);
+void spark_serial_flush();
+int spark_serial_peek();
+void spark_get_rx(const char* name, const char* data);
+void spark_send_tx();
 void spark_process();
 
 }; // particle_core
+
 
 #endif // particle_core_h

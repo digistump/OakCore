@@ -169,4 +169,39 @@ const void* CloudClass::update_string_variable(const char* name, Spark_Data_Type
     return s->c_str();
 }
 
+void CloudClass::begin()
+{
+    spark_serial_begin();
+}
+
+size_t CloudClass::write(uint8_t b)
+{
+    return spark_serial_write(b);
+}
+
+int CloudClass::available()
+{
+    return spark_serial_available();
+}
+
+int CloudClass::read()
+{
+    spark_serial_read();
+}
+
+int CloudClass::peek()
+{
+    spark_serial_peek();
+}
+
+void CloudClass::flush()
+{
+    spark_serial_flush();
+}
+
+void CloudClass::end()
+{
+    spark_serial_end();
+}
+
 CloudClass Particle;
