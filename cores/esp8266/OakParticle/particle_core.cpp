@@ -2586,6 +2586,18 @@ bool spark_connect(){
   return false;
 }
 
+#define MAX_SERIAL_BUFF 256
+
+char* spark_receive_buffer = NULL;
+char* spark_transmit_buffer = NULL;
+
+volatile uint8_t spark_receive_buffer_tail = 0;
+volatile uint8_t spark_receive_buffer_head = 0;
+volatile uint8_t spark_transmit_buffer_tail = 0;
+volatile uint8_t spark_transmit_buffer_head = 0;
+volatile uint8_t spark_listening;
+volatile uint8_t spark_buffer_overflow;
+
 void spark_serial_begin(){
     //don't allocate buffers until this is called
     spark_receive_buffer = new char[MAX_SERIAL_BUFF];

@@ -214,18 +214,6 @@ bool spark_internal_connect();
 bool spark_connect();
 
 //Spark Serial
-#define MAX_SERIAL_BUFF 256
-
-char* spark_receive_buffer = NULL;
-char* spark_transmit_buffer = NULL;
-
-volatile uint8_t spark_receive_buffer_tail = 0;
-volatile uint8_t spark_receive_buffer_head = 0;
-volatile uint8_t spark_transmit_buffer_tail = 0;
-volatile uint8_t spark_transmit_buffer_head = 0;
-volatile uint8_t spark_listening;
-volatile uint8_t spark_buffer_overflow;
-
 void spark_serial_begin();
 void spark_serial_end();
 int spark_serial_read();
