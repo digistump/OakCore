@@ -10,6 +10,7 @@
 #define OAK_SYSTEM_VERSION 1
 extern char OAK_SYSTEM_VERSION_STRING[];
 
+namespace particle_core {
 
 typedef int (user_function_int_str_t)(String paramString);
 typedef user_function_int_str_t* p_user_function_int_str_t;
@@ -88,7 +89,6 @@ extern const CloudVariableTypeInt INT;
 extern const CloudVariableTypeString STRING;
 extern const CloudVariableTypeDouble DOUBLE;
 
-
 // Deferring to ASN.1 type codes
 namespace SparkReturnType {
   enum Enum {
@@ -99,5 +99,6 @@ namespace SparkReturnType {
   };
 }
 
+}; // particle_core
 
 #endif // particle_h
