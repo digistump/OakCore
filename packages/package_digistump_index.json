@@ -1,0 +1,389 @@
+{
+   "packages":[
+      {
+         "name":"digistump",
+         "maintainer":"Digistump",
+         "websiteURL":"http://digistump.com",
+         "email":"support@digistump.com",
+         "help":{
+            "online":"https://digistump.com/board"
+         },
+         "platforms":[
+         {
+          "name": "Digistump AVR Boards",
+          "architecture": "avr",
+          "version": "1.6.5",
+          "category": "Digistump",
+          "url": "https://github.com/digistump/DigistumpArduino/releases/download/1.6.5a/digistump-avr.zip",
+          "archiveFileName": "digistump-avr.zip",
+          "checksum": "SHA-256:888763c0e1f7f9505f8bb7347d92d155760c5f13a912863e421540b25376c620",
+          "size": "2491715",
+          "help": {
+            "online": "https://github.com/digistump/DigistumpArduino/issues"
+          },
+          "boards": [
+            {
+              "name": "Digispark (Default - 16.5mhz)"
+            },
+            {
+              "name": "Digispark Pro (Default 16 Mhz)"
+            },
+            {
+              "name": "Digispark Pro (16 Mhz) (32 byte buffer)"
+            },
+            {
+              "name": "Digispark Pro (16 Mhz) (64 byte buffer)"
+            },
+            {
+              "name": "Digispark (16mhz - No USB)"
+            },
+            {
+              "name": "Digispark (8mhz - No USB)"
+            },
+            {
+              "name": "Digispark (1mhz - No USB)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "arduino",
+              "name": "avr-gcc",
+              "version": "4.8.1-arduino5"
+            },
+            {
+              "packager": "digistump",
+              "name": "micronucleus",
+              "version": "2.0a4"
+            }
+          ]
+        },
+        {
+          "name": "Digistump SAM Boards (32-bits ARM Cortex-M3)",
+          "architecture": "sam",
+          "version": "1.6.5",
+          "category": "Digistump",
+          "url": "https://github.com/digistump/DigistumpArduino/releases/download/1.6.5a/digistump-sam.zip",
+          "archiveFileName": "digistump-sam.zip",
+          "checksum": "SHA-256:efc1729f59d305f94b6d0e56bfe82798227490885c2ef62c95740a41713af2ca",
+          "size": "22030737",
+          "help": {
+            "online": "https://github.com/digistump/DigistumpArduino/issues"
+          },
+          "boards": [
+            {"name": "Digistump DigiX"}
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "digistump",
+              "name": "micronucleus",
+              "version": "2.0a4"
+            },
+            {
+              "packager": "digistump",
+              "name": "arm-none-eabi-gcc",
+              "version": "4.8.3-2014q1"
+            },
+            {
+              "packager": "digistump",
+              "name": "bossac",
+              "version": "1.3a-arduino"
+            }
+          ]
+        },
+        {
+          "name": "Oak by Digistump",
+          "architecture": "oak",
+          "version": "0.9.0",
+          "category": "Digistump",
+          "url": "https://github.com/digistump/DigistumpArduino/releases/download/1.6.5a/digistump-sam.zip",
+          "archiveFileName": "digistump-sam.zip",
+          "checksum": "SHA-256:efc1729f59d305f94b6d0e56bfe82798227490885c2ef62c95740a41713af2ca",
+          "size": "22030737",
+          "help": {
+            "online": "https://github.com/digistump/OakCore/issues"
+          },
+          "boards": [
+            {"name": "Oak by Digistump"}
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "digistump",
+              "name": "oakcli",
+              "version": "0.9.0"
+            },
+            {
+              "packager": "digistump",
+              "name": "esptool2",
+              "version": "0.9.0"
+            },
+            {
+              "packager": "digistump", 
+              "version": "1.20.0-26-gb404fb9-2", 
+              "name": "xtensa-lx106-elf-gcc"
+            }, 
+            {
+              "packager": "digistump", 
+              "version": "0.1.2", 
+              "name": "mkspiffs"
+            }
+          ]
+        }
+         ],
+         "tools":[
+            {
+             "name": "micronucleus",
+             "version": "2.0a4",
+             "systems": [
+               {
+                 "host": "x86_64-apple-darwin",
+                 "archiveFileName": "micronucleus-2.0a4-osx.zip",
+                 "url": "https://github.com/digistump/DigistumpArduino/releases/download/1.6.5a/micronucleus-2.0a4-osx.zip",
+                 "checksum": "SHA-256:306505e99fa7d885fe16ae82d2eea447890cd01f9be1b4a9c7dd172a6303713e",
+                 "size": "53469"
+               },
+               {
+                 "host": "i686-mingw32",
+                 "archiveFileName": "micronucleus-2.0a4-win.zip",
+                 "url": "https://github.com/digistump/DigistumpArduino/releases/download/1.6.5a/micronucleus-2.0a4-win.zip",
+                 "checksum": "SHA-256:7738d2a2a46a13771ac567ca3797a4867bcb802e7ca12e41941448645b035c6c",
+                 "size": "1712001"
+               },
+               {
+                 "host": "i686-linux-gnu",
+                 "archiveFileName": "micronucleus-2.0a4-linux32.tar.gz",
+                 "url": "https://github.com/digistump/DigistumpArduino/releases/download/1.6.5a/micronucleus-2.0a4-linux32.tar.gz",
+                 "checksum": "SHA-256:7f2ef39fcc84cc84baac3c29cc1cac1b15399f3e799e7708f8bdc46780ad0e70",
+                 "size": "21930"
+               },
+               {
+                 "host": "x86_64-linux-gnu",
+                 "archiveFileName": "micronucleus-2.0a4-linux64.tar.gz",
+                 "url": "https://github.com/digistump/DigistumpArduino/releases/download/1.6.5a/micronucleus-2.0a4-linux64.tar.gz",
+                 "checksum": "SHA-256:7ee734ee06f629922c6d2ff1b66110606996a527a6677469f66693c692c3b231",
+                 "size": "22849"
+               }
+
+             ]
+           },
+           {
+          "name": "arm-none-eabi-gcc",
+          "version": "4.8.3-2014q1",
+          "systems": [
+            {
+              "host": "i686-mingw32",
+              "archiveFileName": "gcc-arm-none-eabi-4.8.3-2014q1-windows.tar.gz",
+              "url": "http://downloads.arduino.cc/gcc-arm-none-eabi-4.8.3-2014q1-windows.tar.gz",
+              "checksum": "SHA-256:fd8c111c861144f932728e00abd3f7d1107e186eb9cd6083a54c7236ea78b7c2",
+              "size": "84537449"
+            },
+            {
+              "host": "x86_64-apple-darwin",
+              "url": "http://downloads.arduino.cc/gcc-arm-none-eabi-4.8.3-2014q1-mac.tar.gz",
+              "archiveFileName": "gcc-arm-none-eabi-4.8.3-2014q1-mac.tar.gz",
+              "checksum": "SHA-256:3598acf21600f17a8e4a4e8e193dc422b894dc09384759b270b2ece5facb59c2",
+              "size": "52518522"
+            },
+            {
+              "host": "x86_64-pc-linux-gnu",
+              "url": "http://downloads.arduino.cc/gcc-arm-none-eabi-4.8.3-2014q1-linux64.tar.gz",
+              "archiveFileName": "gcc-arm-none-eabi-4.8.3-2014q1-linux64.tar.gz",
+              "checksum": "SHA-256:d23f6626148396d6ec42a5b4d928955a703e0757829195fa71a939e5b86eecf6",
+              "size": "51395093"
+            },
+            {
+              "host": "i686-pc-linux-gnu",
+              "url": "http://downloads.arduino.cc/gcc-arm-none-eabi-4.8.3-2014q1-linux32.tar.gz",
+              "archiveFileName": "gcc-arm-none-eabi-4.8.3-2014q1-linux32.tar.gz",
+              "checksum": "SHA-256:ba1994235f69c526c564f65343f22ddbc9822b2ea8c5ee07dd79d89f6ace2498",
+              "size": "51029223"
+            }
+          ]
+        },
+        {
+          "name": "bossac",
+          "version": "1.3a-arduino",
+          "systems": [
+            {
+              "host": "i686-linux-gnu",
+              "url": "http://downloads.arduino.cc/tools/bossac-1.3a-arduino-i686-linux-gnu.tar.bz2",
+              "archiveFileName": "bossac-1.3a-arduino-i686-linux-gnu.tar.bz2",
+              "checksum": "SHA-256:d6d10362f40729a7877e43474fcf02ad82cf83321cc64ca931f5c82b2d25d24f",
+              "size": "147359"
+            },
+            {
+              "host": "x86_64-pc-linux-gnu",
+              "url": "http://downloads.arduino.cc/tools/bossac-1.3a-arduino-x86_64-pc-linux-gnu.tar.bz2",
+              "archiveFileName": "bossac-1.3a-arduino-x86_64-pc-linux-gnu.tar.bz2",
+              "checksum": "SHA-256:c1daed033251296768fa8b63ad283e053da93427c0f3cd476a71a9188e18442c",
+              "size": "26179"
+            },
+            {
+              "host": "i686-mingw32",
+              "url": "http://downloads.arduino.cc/tools/bossac-1.3a-arduino-i686-mingw32.tar.bz2",
+              "archiveFileName": "bossac-1.3a-arduino-i686-mingw32.tar.bz2",
+              "checksum": "SHA-256:a37727622e0f86cb4f2856ad0209568a5d804234dba3dc0778829730d61a5ec7",
+              "size": "265647"
+            },
+            {
+              "host": "i386-apple-darwin11",
+              "url": "http://downloads.arduino.cc/tools/bossac-1.3a-arduino-i386-apple-darwin11.tar.bz2",
+              "archiveFileName": "bossac-1.3a-arduino-i386-apple-darwin11.tar.bz2",
+              "checksum": "SHA-256:40770b225753e7a52bb165e8f37e6b760364f5c5e96048168d0178945bd96ad6",
+              "size": "39475"
+            }
+          ]
+        },
+        {
+          "name": "oakcli",
+          "version": "0.9.0",
+          "systems": [
+            {
+              "host": "i686-linux-gnu",
+              "url": "https://github.com/digistump/OakCLI/releases/download/0.9.0/oakcli-linux32.tar.gz",
+              "archiveFileName": "oakcli-linux32.tar.gz",
+              "checksum": "SHA-256:d6d10362f40729a7877e43474fcf02ad82cf83321cc64ca931f5c82b2d25d24f",
+              "size": "147359"
+            },
+            {
+              "host": "x86_64-pc-linux-gnu",
+              "url": "https://github.com/digistump/OakCLI/releases/download/0.9.0/oakcli-linux64.tar.gz",
+              "archiveFileName": "oakcli-linux64.tar.gz",
+              "checksum": "SHA-256:c1daed033251296768fa8b63ad283e053da93427c0f3cd476a71a9188e18442c",
+              "size": "26179"
+            },
+            {
+              "host": "i686-mingw32",
+              "url": "https://github.com/digistump/OakCLI/releases/download/0.9.0/oakcli-win32.zip",
+              "archiveFileName": "oakcli-win32.zip",
+              "checksum": "SHA-256:a37727622e0f86cb4f2856ad0209568a5d804234dba3dc0778829730d61a5ec7",
+              "size": "265647"
+            },
+            {
+              "host": "i386-apple-darwin11",
+              "url": "https://github.com/digistump/OakCLI/releases/download/0.9.0/oakcli-osx.zip",
+              "archiveFileName": "oakcli-osx.zip",
+              "checksum": "SHA-256:40770b225753e7a52bb165e8f37e6b760364f5c5e96048168d0178945bd96ad6",
+              "size": "39475"
+            }
+          ]
+        },
+        {
+          "name": "esptool2",
+          "version": "0.9.0",
+          "systems": [
+            {
+              "host": "i686-linux-gnu",
+              "url": "https://github.com/digistump/OakCore/releases/download/0.9.0/esptool2-linux32.tar.gz",
+              "archiveFileName": "esptool2-linux32.tar.gz",
+              "checksum": "SHA-256:d6d10362f40729a7877e43474fcf02ad82cf83321cc64ca931f5c82b2d25d24f",
+              "size": "147359"
+            },
+            {
+              "host": "x86_64-pc-linux-gnu",
+              "url": "https://github.com/digistump/OakCore/releases/download/0.9.0/esptool2-linux64.tar.gz",
+              "archiveFileName": "esptool2-linux64.tar.gz",
+              "checksum": "SHA-256:c1daed033251296768fa8b63ad283e053da93427c0f3cd476a71a9188e18442c",
+              "size": "26179"
+            },
+            {
+              "host": "i686-mingw32",
+              "url": "https://github.com/digistump/OakCore/releases/download/0.9.0/esptool2-win32.zip",
+              "archiveFileName": "esptool2-win32.zip",
+              "checksum": "SHA-256:a37727622e0f86cb4f2856ad0209568a5d804234dba3dc0778829730d61a5ec7",
+              "size": "265647"
+            },
+            {
+              "host": "i386-apple-darwin11",
+              "url": "https://github.com/digistump/OakCore/releases/download/0.9.0/esptool2-osx.zip",
+              "archiveFileName": "esptool2-osx.zip",
+              "checksum": "SHA-256:40770b225753e7a52bb165e8f37e6b760364f5c5e96048168d0178945bd96ad6",
+              "size": "39475"
+            }
+          ]
+        },
+        {
+          "name": "xtensa-lx106-elf-gcc",
+          "version": "1.20.0-26-gb404fb9-2",
+          "systems": [
+            {
+              "host": "i686-mingw32",
+              "url": "http://arduino.esp8266.com/win32-xtensa-lx106-elf-gb404fb9-2.tar.gz",
+              "archiveFileName": "win32-xtensa-lx106-elf-gb404fb9-2.tar.gz",
+              "checksum": "SHA-256:10476b9c11a7a90f40883413ddfb409f505b20692e316c4e597c4c175b4be09c",
+              "size": "153527527"
+            },
+            {
+              "host": "x86_64-apple-darwin",
+              "url": "http://arduino.esp8266.com/osx-xtensa-lx106-elf-gb404fb9-2.tar.gz",
+              "archiveFileName": "osx-xtensa-lx106-elf-gb404fb9-2.tar.gz",
+              "checksum": "SHA-256:0cf150193997bd1355e0f49d3d49711730035257bc1aee1eaaad619e56b9e4e6",
+              "size": "35385382"
+            },
+            {
+              "host": "i386-apple-darwin",
+              "url": "http://arduino.esp8266.com/osx-xtensa-lx106-elf-gb404fb9-2.tar.gz",
+              "archiveFileName": "osx-xtensa-lx106-elf-gb404fb9-2.tar.gz",
+              "checksum": "SHA-256:0cf150193997bd1355e0f49d3d49711730035257bc1aee1eaaad619e56b9e4e6",
+              "size": "35385382"
+            },
+            {
+              "host": "x86_64-pc-linux-gnu",
+              "url": "http://arduino.esp8266.com/linux64-xtensa-lx106-elf-gb404fb9.tar.gz",
+              "archiveFileName": "linux64-xtensa-lx106-elf-gb404fb9.tar.gz",
+              "checksum": "SHA-256:46f057fbd8b320889a26167daf325038912096d09940b2a95489db92431473b7",
+              "size": "30262903"
+            },
+            {
+              "host": "i686-pc-linux-gnu",
+              "url": "http://arduino.esp8266.com/linux32-xtensa-lx106-elf.tar.gz",
+              "archiveFileName": "linux32-xtensa-lx106-elf.tar.gz",
+              "checksum": "SHA-256:b24817819f0078fb05895a640e806e0aca9aa96b47b80d2390ac8e2d9ddc955a",
+              "size": "32734156"
+            }
+          ]
+        },
+        {
+          "name": "mkspiffs",
+          "version": "0.1.2",
+          "systems": [
+            {
+              "host": "i686-mingw32",
+              "url": "https://github.com/igrr/mkspiffs/releases/download/0.1.2/mkspiffs-0.1.2-windows.zip",
+              "archiveFileName": "mkspiffs-0.1.2-windows.zip",
+              "checksum": "SHA-256:0a29119b8458b61a877408f7995e4944623a712e0d313a2c2f76af9ab55cc9f2",
+              "size": "230802"
+            },
+            {
+              "host": "x86_64-apple-darwin",
+              "url": "https://github.com/igrr/mkspiffs/releases/download/0.1.2/mkspiffs-0.1.2-osx.tar.gz",
+              "archiveFileName": "mkspiffs-0.1.2-osx.tar.gz",
+              "checksum": "SHA-256:df656fae21a41c1269ea50cb53752dcaf6a4e1437255f3a9fb50b4025549b58e",
+              "size": "115091"
+            },
+            {
+              "host": "i386-apple-darwin",
+              "url": "https://github.com/igrr/mkspiffs/releases/download/0.1.2/mkspiffs-0.1.2-osx.tar.gz",
+              "archiveFileName": "mkspiffs-0.1.2-osx.tar.gz",
+              "checksum": "SHA-256:df656fae21a41c1269ea50cb53752dcaf6a4e1437255f3a9fb50b4025549b58e",
+              "size": "115091"
+            },
+            {
+              "host": "x86_64-pc-linux-gnu",
+              "url": "https://github.com/igrr/mkspiffs/releases/download/0.1.2/mkspiffs-0.1.2-linux64.tar.gz",
+              "archiveFileName": "mkspiffs-0.1.2-linux64.tar.gz",
+              "checksum": "SHA-256:1a1dd81b51daf74c382db71b42251757ca4136e8762107e69feaa8617bac315f",
+              "size": "46281"
+            },
+            {
+              "host": "i686-pc-linux-gnu",
+              "url": "https://github.com/igrr/mkspiffs/releases/download/0.1.2/mkspiffs-0.1.2-linux32.tar.gz",
+              "archiveFileName": "mkspiffs-0.1.2-linux32.tar.gz",
+              "checksum": "SHA-256:e990d545dfcae308aabaac5fa9e1db734cc2b08167969e7eedac88bd0839667c",
+              "size": "45272"
+            }
+          ]
+        }
+        ]
+      }
+   ]
+}
