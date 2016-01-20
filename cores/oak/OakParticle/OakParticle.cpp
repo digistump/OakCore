@@ -11,7 +11,7 @@ extern "C"{
 }
 
 CloudClass::CloudClass(){
-    spark_initConfig();
+    spark_initConfig(false);
 }
 
 
@@ -135,7 +135,7 @@ bool CloudClass::syncTime(void)
     { SystemClass::sleep(wakeUpPin, edgeTriggerMode, seconds); }
 */
 
-void CloudClass::initialize(void) { return spark_initConfig(); }
+void CloudClass::initialize(bool isSystem) { return spark_initConfig(isSystem); }
 bool CloudClass::connected(void) { return spark_connected(); }
 bool CloudClass::disconnected(void) { return !connected(); }
 bool CloudClass::connect(void) { return spark_connect(); }
@@ -207,6 +207,14 @@ void CloudClass::flush()
 void CloudClass::end()
 {
     spark_serial_end();
+}
+
+String CloudClass::pubKey(){
+  return pubKey();
+}
+
+bool CloudClass::provisionKeys(bool force){//(bool force){
+   return provisionKeys(force);
 }
 
 CloudClass Particle;

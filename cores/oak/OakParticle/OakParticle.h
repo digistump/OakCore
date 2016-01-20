@@ -38,6 +38,9 @@ class CloudClass : public Stream {
 public:
     CloudClass();
 
+    String pubKey(void);
+    bool provisionKeys(bool force = false);
+
     static inline bool variable(const char* varKey, const int& var)
     {
         return variable(varKey, &var, particle_core::INT);
@@ -141,7 +144,7 @@ public:
     static void sleep(uint16_t wakeUpPin, InterruptMode edgeTriggerMode, long seconds=0) __attribute__ ((deprecated("Please use System.sleep() instead.")))
     { SystemClass::sleep(wakeUpPin, edgeTriggerMode, seconds); }
 */
-    static void initialize(void);
+    static void initialize(bool isSystem = false);
     static bool connected(void);
     static bool disconnected(void);
     static bool connect(void);

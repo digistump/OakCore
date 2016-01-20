@@ -4,6 +4,8 @@
 #include "particle.h"
 
 namespace particle_core {
+
+bool check_image(uint8_t rom_number);
 	
 typedef std::function<bool(const void*, SparkReturnType::Enum)> FunctionResultCallback;
 
@@ -25,6 +27,14 @@ uint8_t hex_nibble(unsigned char c);
 
 size_t hex_decode(uint8_t* buf, size_t len, const char* hex);
 
+bool IPAddressFromString(IPAddress &ipaddress, const char *address);
+
+int rsa_random(void* p);
+
+static char ascii_nibble(uint8_t nibble);
+
+bool generatePrivateKey(uint8_t *keyBuffer);
+
 // Returns bytes received or -1 on error
 int blocking_send(const unsigned char *buf, int length);
 
@@ -34,6 +44,8 @@ int receive(unsigned char *buf, int length);
 // Returns bytes received or -1 on error
 int blocking_receive(unsigned char *buf, int length);
 
+int decrypt_rsa(const uint8_t* ciphertext, const uint8_t* private_key, uint8_t* plaintext, int plaintext_len);
+int decrypt(char* plaintext, int max_plaintext_len, char* hex_encoded_ciphertext);
 
 int set_key(const unsigned char *signed_encrypted_credentials);
 
@@ -188,7 +200,7 @@ bool wifiConnected();
 
 bool wifiWaitForConnection();
 
-bool readDeviceConfig();
+bool readDeviceConfig(bool isSystem = false);
 
 unsigned char next_token();
 
@@ -209,7 +221,7 @@ void SystemEvents(const char* name, const char* data);
 void oak_rom_init();
 
 //this should be called when the Particle library is inited 
-void spark_initConfig();
+void spark_initConfig(bool isSystem = false);
 
 bool spark_internal_connect();
 
@@ -227,6 +239,11 @@ void spark_get_rx(const char* name, const char* data);
 void spark_send_tx();
 void spark_process();
 
+String infoResponse(void);
+String setConfigFromJSON(String json);
+String configureApFromJSON(String json);
+bool provisionKeys(bool force);
+String pubKey();
 }; // particle_core
 
 

@@ -4,13 +4,38 @@
 #include <functional>
 #include <WString.h>
 #include "events.h"
+#include "IPAddress.h"
 
 #define PRODUCT_ID 82
 #define PLATFORM_ID 82
-#define OAK_SYSTEM_VERSION 1
-extern char OAK_SYSTEM_VERSION_STRING[];
+#define OAK_SYSTEM_VERSION_INTEGER 1
+#define OAK_SYSTEM_VERSION_MAJOR 1
+#define OAK_SYSTEM_VERSION_MINOR 0
+#define OAK_SYSTEM_VERSION_RELEASE 0
+
+#define MAX_COMMAND_LENGTH 14
+/* Length in bytes of DER-encoded 1024-bit RSA private key */
+#define PRIVATE_KEY_LENGTH    (612)
+/* Length in bytes of DER-encoded 2048-bit RSA public key */
+#define SERVER_PUBLIC_KEY_LENGTH   (294)
+#define SERVER_DOMAIN_LENGTH   (253)
 
 namespace particle_core {
+
+typedef enum
+{
+  IP_ADDRESS = 0, DOMAIN_NAME = 1, INVALID_INTERNET_ADDRESS = 0xff
+} Internet_Address_TypeDef;
+
+typedef struct __attribute__ ((__packed__)) ServerAddress_ {
+  uint8_t addr_type;
+  uint8_t length;
+  union __attribute__ ((__packed__)) {
+    char domain[127];
+    uint32_t ip;
+  };
+} ServerAddress;
+
 
 typedef int (user_function_int_str_t)(String paramString);
 typedef user_function_int_str_t* p_user_function_int_str_t;

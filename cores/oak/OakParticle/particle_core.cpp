@@ -1,6 +1,5 @@
 #include "particle_core.h"
 
-char OAK_SYSTEM_VERSION_STRING[5] = {"1.00"};
 
 //#include <Arduino.h>
 #include "../ESP8266WiFi/src/ESP8266WiFi.h"
@@ -2324,7 +2323,7 @@ bool wifiWaitForConnection(){ //returns false if it times out - I will later add
 
 
 
-bool readDeviceConfig(){
+bool readDeviceConfig(bool isSystem){
 	noInterrupts();
 	spi_flash_read(DEVICE_CONFIG_SECTOR * SECTOR_SIZE, reinterpret_cast<uint32_t*>(config_buffer), DEVICE_CONFIG_SIZE);
 
@@ -2337,9 +2336,16 @@ bool readDeviceConfig(){
 	interrupts();
 
 	if(deviceConfig->magic != DEVICE_MAGIC || deviceConfig->chksum != calc_device_chksum((uint8*)deviceConfig, (uint8*)&deviceConfig->chksum)){
-	    //TODO: reboot to config rom
-	    while(1);
-	    return false;
+      if(isSystem){
+        ets_memset(deviceConfig, 0x00, sizeof(oak_config));
+        deviceConfig->magic = DEVICE_MAGIC;
+        deviceConfig->chksum = calc_device_chksum((uint8*)deviceConfig, (uint8*)&deviceConfig->chksum);
+        writeDeviceConfig();
+      }
+      else{
+       rebootToConfig();
+	     return false;
+     }
 	}
 
 	return true;
@@ -2400,7 +2406,7 @@ bool particle_handshake(){
   spark_send_event("spark/hardware/ota_chunk_size", buf, 60, PRIVATE, NULL);
 
   ///if we want to be able to get a system update we need to send that we are in safe more right now
-  if (deviceConfig->system_version < OAK_SYSTEM_VERSION && bootConfig->current_rom != bootConfig->config_rom)
+  if (deviceConfig->system_version < OAK_SYSTEM_VERSION_INTEGER && bootConfig->current_rom != bootConfig->config_rom)
     spark_send_event("spark/device/safemode" "", "", 60, PRIVATE, NULL);
 
   #if defined(SPARK_SUBSYSTEM_EVENT_NAME)
@@ -2432,6 +2438,12 @@ void rebootToUser(){
 
 void rebootToConfig(){
   bootConfig->current_rom = bootConfig->config_rom;
+  ESP.restart();
+  while(1);
+}
+
+void rebootToFallbackUpdater(){
+  bootConfig->current_rom = bootConfig->update_rom;
   ESP.restart();
   while(1);
 }
@@ -2500,17 +2512,21 @@ void SystemEvents(const char* name, const char* data)
 }
 
 
-#define OAK_SYSTEM_ROM_4F616B 82
+
 
 void oak_rom_init(){
   #ifndef OAK_SYSTEM_ROM_4F616B
     #define OAK_SYSTEM_ROM_4F616B 0
   #endif
   #ifdef OAK_SYSTEM_ROM_4F616B //DO NOT DEFINE THIS IN YOUR FILE OR IT MAY CORRUPT YOUR DEVICE
-    if(OAK_SYSTEM_ROM_4F616B == 82 && deviceConfig->system_version < OAK_SYSTEM_VERSION){
+    if(OAK_SYSTEM_ROM_4F616B == 82 && deviceConfig->system_version < OAK_SYSTEM_VERSION_INTEGER){
+      //TODO WHAT ABOUT BOOTING TO THIS DO TO FAILURE AFTER UPDATE
       //this is a new system rom that we just booted into
-      deviceConfig->system_version = OAK_SYSTEM_VERSION;
-      memcpy(deviceConfig->version_string,OAK_SYSTEM_VERSION_STRING,sizeof(OAK_SYSTEM_VERSION_STRING));
+      deviceConfig->system_version = OAK_SYSTEM_VERSION_INTEGER;
+
+      sprintf(deviceConfig->version_string, "%d.%d.%d", OAK_SYSTEM_VERSION_MAJOR, OAK_SYSTEM_VERSION_MINOR, OAK_SYSTEM_VERSION_RELEASE);
+      Serial.println(deviceConfig->version_string);
+      //memcpy(deviceConfig->version_string,OAK_SYSTEM_VERSION_STRING,sizeof(OAK_SYSTEM_VERSION_STRING));
       bootConfig->config_rom = bootConfig->current_rom;
       writeDeviceConfig();
       writeBootConfig();
@@ -2528,12 +2544,12 @@ void oak_rom_init(){
 }
 
 //this should be called when the Particle library is inited 
-void spark_initConfig(){
+void spark_initConfig(bool isSystem){
   if(spark_initialized)
     return;
   spark_initialized = true;
   Serial.println("INIT CONFIG");
-  readDeviceConfig(); //will not return if valid device config does not exist, will reboot to config ROM - stubbed out for now
+  readDeviceConfig(isSystem); //will not return if valid device config does not exist, will reboot to config ROM, unless isSytem in which case it will create a new one
   readBootConfig();
   hex_decode(device_id,12,deviceConfig->device_id);
   oak_rom_init();
@@ -2727,5 +2743,619 @@ void spark_process()
     lastCloudEvent = millis();
 }
 
+
+
+
+
+#define NOINLINE __attribute__ ((noinline))
+
+#define ROM_MAGIC    0xe9
+#define ROM_MAGIC_NEW1 0xea
+#define ROM_MAGIC_NEW2 0x04
+
+
+// buffer size, must be at least 0x10 (size of rom_header_new structure)
+#define BUFFER_SIZE 0x100
+
+// functions we'll call by address
+typedef void stage2a(uint32);
+typedef void usercode(void);
+
+// standard rom header
+typedef struct {
+  // general rom header
+  uint8 magic;
+  uint8 count;
+  uint8 flags1;
+  uint8 flags2;
+  usercode* entry;
+} rom_header;
+
+typedef struct {
+  uint8* address;
+  uint32 length;
+} section_header;
+
+// new rom header (irom section first) there is
+// another 8 byte header straight afterward the
+// standard header
+typedef struct {
+  // general rom header
+  uint8 magic;
+  uint8 count; // second magic for new header
+  uint8 flags1;
+  uint8 flags2;
+  uint32 entry;
+  // new type rom, lib header
+  uint32 add; // zero
+  uint32 len; // length of irom section
+} rom_header_new;
+
+
+bool check_image(uint8_t rom_number) {
+
+  uint32 readpos = bootConfig->roms[rom_number];
+  
+  uint8 buffer[BUFFER_SIZE];
+  uint8 sectcount;
+  uint8 sectcurrent;
+  uint8 *writepos;
+  uint8 chksum = CHKSUM_INIT;
+  uint32 loop;
+  uint32 remaining;
+  uint32 romaddr;
+  
+  rom_header_new *header = (rom_header_new*)buffer;
+  section_header *section = (section_header*)buffer;
+  
+  if (readpos == 0 || readpos == 0xffffffff) {
+    //ets_printf("EMPTY");
+    return 0;
+  }
+  
+  // read rom header
+  //if (SPIRead(readpos, header, sizeof(rom_header_new)) != 0) {
+  if (spi_flash_read(readpos, reinterpret_cast<uint32_t*>(header), sizeof(rom_header_new)) != SPI_FLASH_RESULT_OK) {
+    //ets_printf("NO_HEADER");
+    return 0;
+  }
+  
+  // check header type
+  if (header->magic == ROM_MAGIC) {
+    // old type, no extra header or irom section to skip over
+    romaddr = readpos;
+    readpos += sizeof(rom_header);
+    sectcount = header->count;
+  } else if (header->magic == ROM_MAGIC_NEW1 && header->count == ROM_MAGIC_NEW2) {
+    // new type, has extra header and irom section first
+    romaddr = readpos + header->len + sizeof(rom_header_new);
+
+    // we will set the real section count later, when we read the header
+    sectcount = 0xff;
+    // just skip the first part of the header
+    // rest is processed for the chksum
+    readpos += sizeof(rom_header);
+/*
+    // skip the extra header and irom section
+    readpos = romaddr;
+    // read the normal header that follows
+    if (SPIRead(readpos, header, sizeof(rom_header)) != 0) {
+      //ets_printf("NNH");
+      return 0;
+    }
+    sectcount = header->count;
+    readpos += sizeof(rom_header);
+*/
+  } else {
+    //ets_printf("BH");
+    return 0;
+  }
+  
+  // test each section
+  for (sectcurrent = 0; sectcurrent < sectcount; sectcurrent++) {
+    //ets_printf("ST");
+    
+    // read section header
+    if (spi_flash_read(readpos, reinterpret_cast<uint32_t*>(section), sizeof(section_header)) != SPI_FLASH_RESULT_OK) {
+      return 0;
+    }
+    readpos += sizeof(section_header);
+
+    // get section address and length
+    writepos = section->address;
+    remaining = section->length;
+    
+    while (remaining > 0) {
+      // work out how much to read, up to BUFFER_SIZE
+      uint32 readlen = (remaining < BUFFER_SIZE) ? remaining : BUFFER_SIZE;
+      // read the block
+      if (spi_flash_read(readpos, reinterpret_cast<uint32_t*>(buffer), readlen) != SPI_FLASH_RESULT_OK) {
+        return 0;
+      }
+      // increment next read and write positions
+      readpos += readlen;
+      writepos += readlen;
+      // decrement remaining count
+      remaining -= readlen;
+      // add to chksum
+      for (loop = 0; loop < readlen; loop++) {
+        chksum ^= buffer[loop];
+      }
+    }
+    
+//#ifdef BOOT_IROM_CHKSUM
+    if (sectcount == 0xff) {
+      // just processed the irom section, now
+      // read the normal header that follows
+      if (spi_flash_read(readpos, reinterpret_cast<uint32_t*>(header), sizeof(rom_header)) != SPI_FLASH_RESULT_OK) {
+        //ets_printf("SPI");
+        return 0;
+      }
+      sectcount = header->count + 1;
+      readpos += sizeof(rom_header);
+    }
+//#endif
+  }
+  
+  // round up to next 16 and get checksum
+  readpos = readpos | 0x0f;
+
+  if (spi_flash_read(readpos, reinterpret_cast<uint32_t*>(buffer), 1) != SPI_FLASH_RESULT_OK) {
+    //ets_printf("CK");
+    return 0;
+
+  }
+  
+  // compare calculated and stored checksums
+  if (buffer[0] != chksum) {
+    //ets_printf("CKF");
+    return 0;
+  }
+  
+  return 1;
+}
+
+int decrypt_rsa(const uint8_t* ciphertext, const uint8_t* private_key, uint8_t* plaintext, int plaintext_len)
+{
+    rsa_context rsa;
+    init_rsa_context_with_private_key(&rsa, private_key);
+    int err = rsa_pkcs1_decrypt(&rsa, RSA_PRIVATE, &plaintext_len, ciphertext, plaintext, plaintext_len);
+    rsa_free(&rsa);
+    return err ? -abs(err) : plaintext_len;
+}
+
+
+int decrypt(char* plaintext, int max_plaintext_len, char* hex_encoded_ciphertext) {
+    const size_t len = 256;
+    uint8_t buf[len];
+    hex_decode(buf, len, hex_encoded_ciphertext);
+
+    // reuse the hex encoded buffer
+    int plaintext_len = decrypt_rsa(buf, deviceConfig->device_private_key, (uint8_t*)plaintext, max_plaintext_len);
+    return plaintext_len;
+}
+
+/**
+ * Reads and generates the device's private key.
+ * @param keyBuffer
+ * @return
+ */
+bool generatePrivateKey(uint8_t *keyBuffer)//, bool force)
+{
+    if(*keyBuffer!=0xFF && *keyBuffer!=0x00){// && !force){
+      return false;
+    }
+    else{
+      ESP.wdtDisable();
+        if (!gen_rsa_key(keyBuffer, PRIVATE_KEY_LENGTH, rsa_random, NULL)) {
+            //keyBuffer + PRIVATE_KEY_LENGTH = '\0';
+            ESP.wdtEnable(WDTO_8S);
+            return true;
+        }
+      ESP.wdtEnable(WDTO_8S);
+    }
+    return false;
+}
+
+static char ascii_nibble(uint8_t nibble) {
+    char hex_digit = nibble + 48;
+    if (57 < hex_digit)
+        hex_digit += 7;
+    return hex_digit;
+}
+
+int rsa_random(void* p)
+{
+    byte randBytes[4];
+    os_get_random(randBytes, 4);
+    return *((long *)randBytes);
+}
+
+bool IPAddressFromString(IPAddress &ipaddress, const char *address)
+{
+
+    uint16_t acc = 0; // Accumulator
+    uint8_t dots = 0;
+
+    while (*address)
+    {
+        char c = *address++;
+        if (c >= '0' && c <= '9')
+        {
+            acc = acc * 10 + (c - '0');
+            if (acc > 255) {
+                // Value out of [0..255] range
+                return false;
+            }
+        }
+        else if (c == '.')
+        {
+            if (dots == 3) {
+                // Too much dots (there must be 3 dots)
+                return false;
+            }
+            ipaddress[dots++] = acc;
+            acc = 0;
+        }
+        else
+        {
+            // Invalid char
+            return false;
+        }
+    }
+
+    if (dots != 3) {
+        // Too few dots (there must be 3 dots)
+        return false;
+    }
+    ipaddress[3] = acc;
+    return true;
+}
+
+
+String infoResponse(void){
+
+  String response = "{\"id\":\"";
+  response += deviceConfig->device_id;
+  response += "\",\"claimed\":";
+  if(deviceConfig->claimed != 1)
+    response += "0,";
+  else
+    response += "1,";
+  response += "\"claim_code\":\"";
+  response += deviceConfig->claim_code;
+  response += "\",\"server_address_type\":";
+  if(deviceConfig->server_address_type != 1){
+    response += "0,";
+    response += "\"server_address_ip\":\"";
+    IPAddress server_ip = IPAddress(deviceConfig->server_address_ip);
+    response += String(server_ip[0]);
+    response += ".";
+    response += String(server_ip[1]);
+    response += ".";
+    response += String(server_ip[2]);
+    response += ".";
+    response += String(server_ip[3]);
+    response += "\"";
+  }
+  else if(deviceConfig->server_address_type == 1){
+    response += "1,";
+    response += "\"server_address_domain\":\"";
+    response += deviceConfig->server_address_domain;
+    response += "\"";
+  }
+  else
+    response += "-1,";
+
+    response += ",\"firmware_version\":";
+  response += deviceConfig->firmware_version;
+    response += ",\"version_string\":\"";
+  response += deviceConfig->version_string;
+  response += "\",\"meta_id\":";
+  response += deviceConfig->third_party_id;
+   response += ",\"meta_data\":\"";
+  response += deviceConfig->third_party_data;
+  response += "\",\"first_update_domain\":\"";
+  response += deviceConfig->first_update_domain;
+  response += "\",\"first_update_url\":\"";
+  response += deviceConfig->first_update_url;
+  response += "\",\"first_update_fingerprint\":\"";
+  response += deviceConfig->first_update_fingerprint;
+  response += "\"}";
+  return response;
+}
+
+String setConfigFromJSON(String json){
+
+  String valueString;
+  uint8_t gotSomething = false;
+  int16_t valueStart = json.indexOf("\"cc\":\"");
+  int16_t valueEnd;
+  if(valueStart>=0){
+    valueEnd = json.indexOf('"',valueStart+6);
+    valueString = json.substring(valueStart+6,valueEnd);
+    valueString.trim();
+    if(valueString.length()!=64){
+      return String("{\"r\":-1}");
+    }
+    gotSomething = true;
+    valueString.toCharArray(deviceConfig->claim_code,65);
+    deviceConfig->claim_code[64] = '\0';
+  }
+
+  valueStart = json.indexOf("\"device-id\":\"");
+  if(valueStart>=0){
+    valueEnd = json.indexOf('"',valueStart+13);
+    valueString = json.substring(valueStart+13,valueEnd);
+    valueString.trim();
+    if(valueString.length()!=24){
+
+      return String("{\"r\":-1}");
+    }
+    #ifdef DEBUG_SETUP
+      Serial.print("=");
+      Serial.print(valueString);
+      Serial.println("=");
+    #endif
+    //deviceIdSet = true;
+    //bootConfig->first_boot = 1;
+    //writeBootConfig();
+    //LEDFlip.attach(0.5, FlipLED);
+    gotSomething = true;
+    valueString.toCharArray(deviceConfig->device_id,25);
+    #ifdef DEBUG_SETUP
+      Serial.print("=");
+      Serial.print(deviceConfig->device_id);
+      Serial.println("=");
+    #endif
+    deviceConfig->device_id[24] = '\0';
+    #ifdef DEBUG_SETUP
+      Serial.print("=");
+      Serial.print(deviceConfig->device_id);
+      Serial.println("=");
+    #endif
+  }
+
+  valueStart = json.indexOf("\"meta-id\":");
+  if(valueStart>=0){
+    valueEnd = json.indexOf(',',valueStart+10);
+    valueString = json.substring(valueStart+10,valueEnd);
+    gotSomething = true;
+    deviceConfig->third_party_id = valueString.toInt();
+  }
+
+  valueStart = json.indexOf("\"first-update-domain\":\"");
+  if(valueStart>=0){
+    valueEnd = json.indexOf('"',valueStart+23);
+    valueString = json.substring(valueStart+23,valueEnd);
+    valueString.trim();
+    if(valueString.length()>64){
+      return String("{\"r\":-1}");
+    }
+    gotSomething = true;
+    valueString.toCharArray(deviceConfig->first_update_domain,valueString.length()+1);
+    deviceConfig->first_update_domain[valueString.length()] = '\0';
+  }
+
+  valueStart = json.indexOf("\"first-update-url\":\"");
+  if(valueStart>=0){
+    valueEnd = json.indexOf('"',valueStart+20);
+    valueString = json.substring(valueStart+20,valueEnd);
+    valueString.trim();
+    if(valueString.length()>64){
+      return String("{\"r\":-1}");
+    }
+    gotSomething = true;
+    valueString.toCharArray(deviceConfig->first_update_url,valueString.length()+1);
+    deviceConfig->first_update_url[valueString.length()] = '\0';
+  }
+
+  valueStart = json.indexOf("\"first-update-fingerprint\":\"");
+  if(valueStart>=0){
+    valueEnd = json.indexOf('"',valueStart+28);
+    valueString = json.substring(valueStart+28,valueEnd);
+    valueString.trim();
+    if(valueString.length()>59){
+      return String("{\"r\":-1}");
+    }
+    gotSomething = true;
+    valueString.toCharArray(deviceConfig->first_update_fingerprint,valueString.length()+1);
+    deviceConfig->first_update_fingerprint[valueString.length()] = '\0';
+  }
+
+  valueStart = json.indexOf("\"meta-data\":\"");
+  if(valueStart>=0){
+    valueEnd = json.indexOf('"',valueStart+13);
+    valueString = json.substring(valueStart+13,valueEnd);
+    valueString.trim();
+    if(valueString.length()>255){
+      return String("{\"r\":-1}");
+    }
+    gotSomething = true;
+    valueString.toCharArray(deviceConfig->third_party_data,valueString.length()+1);
+    deviceConfig->third_party_data[valueString.length()] = '\0';
+  }
+
+  valueStart = json.indexOf("\"server-address\":\"");
+  if(valueStart>=0){
+    valueEnd = json.indexOf('"',valueStart+18);
+    valueString = json.substring(valueStart+18,valueEnd);
+    valueString.trim();
+    if(valueString.length()>253){
+      return String("{\"r\":-1}");
+    }
+    //get server address type
+    valueStart = json.indexOf("\"server-address-type\":");
+    if(valueStart<0){
+      //server-address-type not set
+      return String("{\"r\":-1}");
+    }
+    char server_address_type = json.charAt(valueStart+22);
+    if(server_address_type == '0'){
+      gotSomething = true;
+      IPAddress bufIP;
+      IPAddressFromString(bufIP,valueString.c_str());
+      deviceConfig->server_address_ip = bufIP;
+      deviceConfig->server_address_length = '\0';
+    }
+    else if(server_address_type == '1'){
+      gotSomething = true;
+      valueString.toCharArray(deviceConfig->server_address_domain,valueString.length()+1);
+      deviceConfig->server_address_domain[valueString.length()] = '\0';
+      deviceConfig->server_address_domain[253] = '\0';
+    }
+    else
+      return String("{\"r\":-1}");
+    
+    
+  }
+
+  valueStart = json.indexOf("\"server-public-key\":\"");
+  if(valueStart>=0){
+    valueEnd = json.indexOf('"',valueStart+21);
+    valueString = json.substring(valueStart+21,valueEnd);
+    if(valueString.length()>2046){
+      return String("{\"r\":-1}");
+    }
+    gotSomething = true;
+    const size_t len = (valueString.length()+1)/2;
+    uint8_t buf[len];
+    hex_decode(buf, len, valueString.c_str());
+    memcpy(deviceConfig->server_public_key,buf,SERVER_PUBLIC_KEY_LENGTH);
+    
+    if(len>386){
+      uint8_t domainLength;
+      domainLength = buf[385];
+      deviceConfig->server_address_type = buf[384];
+      if(deviceConfig->server_address_type == IP_ADDRESS){
+        uint8_t ipBuf[4];
+        memcpy(ipBuf,buf+386,4);
+        deviceConfig->server_address_ip = (ipBuf[3] << 24) | (ipBuf[2] << 16) | (ipBuf[1] << 8)  |  ipBuf[0];
+        deviceConfig->server_address_length = '\0';
+        
+      }
+      else if(deviceConfig->server_address_type == DOMAIN_NAME && domainLength < 254){
+        memcpy(deviceConfig->server_address_domain,buf+386,domainLength);
+        deviceConfig->server_address_domain[domainLength] = '\0';
+        deviceConfig->server_address_domain[253] = '\0';
+        deviceConfig->server_address_length = domainLength;
+      }
+      else{
+        return String("{\"r\":-1}");
+      }
+
+    }
+  }
+
+  if(!gotSomething)
+    return String("{\"r\":-1}");
+  else{
+    //write config
+    writeDeviceConfig();
+    return String("{\"r\":0}");
+  }
+}
+
+String configureApFromJSON(String json){
+
+  int16_t valueStart = json.indexOf("\"ssid\":\"");
+  if(valueStart<0)
+    return String("{\"r\":-1}");
+
+  int16_t valueEnd = json.indexOf('"',valueStart+8);
+  if(valueEnd-valueStart < 1)
+    return String("{\"r\":-1}");
+  String ssid = json.substring(valueStart+8,valueEnd);
+  ssid.trim();
+  if(ssid.length()>64)
+    return String("{\"r\":-1}");
+  ssid.toCharArray(deviceConfig->ssid,ssid.length()+1);
+  deviceConfig->ssid[ssid.length()] = '\0';
+
+  valueStart = json.indexOf("\"ch\":");
+  uint8_t ch = 0;
+  if(valueStart>=0){
+    valueEnd = json.indexOf(',',valueStart+5);
+    ch = json.substring(valueStart+5,valueEnd).toInt();
+  }
+  deviceConfig->channel = ch;
+
+  valueStart = json.indexOf("\"sec\":");
+  uint8_t sec = false;
+  if(valueStart>=0){
+    valueEnd = json.indexOf(',',valueStart+6);
+    if(json.substring(valueStart+6,valueEnd).equals(String("0")))
+      sec = false;
+    else
+      sec = true;
+  }
+
+  char passcode[65];
+  if(sec == true){
+    valueStart = json.indexOf("\"pwd\":\"");
+    if(valueStart<0)
+      return String("{\"r\":-1}");
+
+    valueEnd = json.indexOf('"',valueStart+7);
+    if(valueEnd-(valueStart+7) != 256)
+      return String("{\"r\":-1}");
+    char encodedPasscode[257];
+    String passcodeString = json.substring(valueStart+7,valueEnd);
+    passcodeString.trim();
+    passcodeString.toCharArray(encodedPasscode,257);
+    int decodeLength = decrypt((char*)deviceConfig->passcode, 65, encodedPasscode);
+    deviceConfig->passcode[decodeLength] = '\0';
+  }
+  else{
+    deviceConfig->passcode[0] = '\0';
+  }
+  writeDeviceConfig();
+  return String("{\"r\":0}");
+
+  
+}
+
+
+String pubKey(){
+  String response;
+  const int length = 162;
+  const uint8_t* data = deviceConfig->device_public_key;
+  for (unsigned i=length; i-->0; ) {
+    uint8_t v = *data++;
+    response += ascii_nibble(v>>4);
+    response += ascii_nibble(v&0xF);
+  }
+  return response;
+}
+
+bool provisionKeys(bool force){//(bool force){
+    if(deviceConfig->device_private_key[0] != 0x00 && deviceConfig->device_private_key[0] != 0xFF && !force)
+        return true;
+  #ifdef DEBUG_SETUP
+    Serial.println("Provision Keys");
+  #endif
+  if(generatePrivateKey(deviceConfig->device_private_key)){
+    parse_device_pubkey_from_privkey(deviceConfig->device_public_key,deviceConfig->device_private_key);
+    #ifdef DEBUG_SETUP
+      const int length = 612;
+      const uint8_t* data = deviceConfig->device_private_key;
+      for (unsigned i=length; i-->0; ) {
+        uint8_t v = *data++;
+        Serial.write(ascii_nibble(v>>4));
+        Serial.write(ascii_nibble(v&0xF));
+      }
+      Serial.write('\n');
+
+    #endif
+    writeDeviceConfig();
+    return true;//generated
+  }
+
+  #ifdef DEBUG_SETUP
+    Serial.println("Provision Keys FAILED");
+  #endif
+  
+  return false; //not generate
+}
 
 }; // particle_core
