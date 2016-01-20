@@ -35,6 +35,8 @@ namespace particle_core {
 
 WiFiClient pClient; 
 
+static System_Mode_TypeDef system_mode = DEFAULT_MODE;
+
 typedef unsigned short uint16_t;
 typedef uint16_t chunk_index_t;
 
@@ -1706,7 +1708,26 @@ int finish_firmware_update(FileTransfer::Descriptor& file, uint32_t flags, void*
     return 0;
 }
 
+bool flashEraseSector(uint32_t sector){
+  return (spi_flash_erase_sector(sector) == SPI_FLASH_RESULT_OK);
+}
 
+bool isClaimed(void){
+  return deviceConfig->claimed == 1;
+}
+
+uint8_t currentRom(void){
+  return bootConfig->current_rom;
+}
+uint8_t configRom(void){
+  return bootConfig->config_rom;
+}
+uint8_t userRom(void){
+  return bootConfig->program_rom;
+}
+uint8_t updateRom(void){
+  return bootConfig->update_rom;
+}
 
 void save_firmware_chunk(FileTransfer::Descriptor& file, uint8_t* chunk, void* reserved)
 {
@@ -2431,19 +2452,22 @@ bool particle_handshake(){
 
 
 void rebootToUser(){
-  bootConfig->current_rom = bootConfig->program_rom;
+  if(bootConfig->current_rom != bootConfig->program_rom)
+    bootConfig->current_rom = bootConfig->program_rom;
   ESP.restart();
   while(1);
 }
 
 void rebootToConfig(){
-  bootConfig->current_rom = bootConfig->config_rom;
+  if(bootConfig->current_rom != bootConfig->config_rom)
+    bootConfig->current_rom = bootConfig->config_rom;
   ESP.restart();
   while(1);
 }
 
 void rebootToFallbackUpdater(){
-  bootConfig->current_rom = bootConfig->update_rom;
+  if(bootConfig->current_rom != bootConfig->update_rom)
+    bootConfig->current_rom = bootConfig->update_rom;
   ESP.restart();
   while(1);
 }
@@ -2586,6 +2610,12 @@ bool spark_internal_connect(){
 
 uint8_t spark_failed_connects = 0;
 uint32_t spark_last_failed_connect = 0;
+
+void spark_auto_connect(){
+  if(system_mode>1)
+    return;
+  while(!spark_connect() && spark_failed_connects < 3){yield();};
+}
 
 bool spark_connect(){
   //connect with automatic back off
@@ -2738,7 +2768,10 @@ void spark_process()
         }
     }
     else{
+      if(system_mode < 2)
         spark_connect();
+      else
+        return;
     }
     lastCloudEvent = millis();
 }
@@ -3356,6 +3389,15 @@ bool provisionKeys(bool force){//(bool force){
   #endif
   
   return false; //not generate
+}
+
+void set_system_mode(System_Mode_TypeDef mode){
+  if(system_mode == DEFAULT_MODE && mode == DEFAULT_MODE)
+    system_mode = AUTOMATIC;
+  else if(mode == DEFAULT_MODE)
+    return;
+  else
+    system_mode = mode;
 }
 
 }; // particle_core

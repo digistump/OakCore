@@ -38,6 +38,7 @@ class CloudClass : public Stream {
 public:
     CloudClass();
 
+    bool isClaimed(void);
     String pubKey(void);
     bool provisionKeys(bool force = false);
 
@@ -111,17 +112,17 @@ public:
     template <typename T>
     static void function(const char *funcKey, int (T::*func)(String), T *instance);
 
-    bool publish(const char *eventName, particle_core::Spark_Event_TypeDef eventType=particle_core::PUBLIC);
-    bool publish(const char *eventName, const char *eventData, particle_core::Spark_Event_TypeDef eventType=particle_core::PUBLIC);
-    bool publish(const char *eventName, const char *eventData, int ttl, particle_core::Spark_Event_TypeDef eventType=particle_core::PUBLIC);
+    bool publish(const char *eventName, Spark_Event_TypeDef eventType=PUBLIC);
+    bool publish(const char *eventName, const char *eventData, Spark_Event_TypeDef eventType=PUBLIC);
+    bool publish(const char *eventName, const char *eventData, int ttl, Spark_Event_TypeDef eventType=PUBLIC);
 
-    bool subscribe(const char *eventName, EventHandler handler, particle_core::Spark_Subscription_Scope_TypeDef scope=particle_core::ALL_DEVICES);
+    bool subscribe(const char *eventName, EventHandler handler, Spark_Subscription_Scope_TypeDef scope=ALL_DEVICES);
     bool subscribe(const char *eventName, EventHandler handler, const char *deviceID);
-    bool subscribe(const char *eventName, particle_core::wiring_event_handler_t handler, particle_core::Spark_Subscription_Scope_TypeDef scope=particle_core::ALL_DEVICES);
+    bool subscribe(const char *eventName, particle_core::wiring_event_handler_t handler, Spark_Subscription_Scope_TypeDef scope=ALL_DEVICES);
     bool subscribe(const char *eventName, particle_core::wiring_event_handler_t handler, const char *deviceID);
 
     template <typename T>
-    bool subscribe(const char *eventName, void (T::*handler)(const char *, const char *), T *instance, particle_core::Spark_Subscription_Scope_TypeDef scope=particle_core::ALL_DEVICES);
+    bool subscribe(const char *eventName, void (T::*handler)(const char *, const char *), T *instance, Spark_Subscription_Scope_TypeDef scope=ALL_DEVICES);
     template <typename T>
     bool subscribe(const char *eventName, void (T::*handler)(const char *, const char *), T *instance, const char *deviceID);
 
@@ -148,6 +149,7 @@ public:
     static bool connected(void);
     static bool disconnected(void);
     static bool connect(void);
+    static void autoConnect(void);
     static void disconnect(void);
     static void process(void);
     static String deviceID(void);
@@ -159,7 +161,7 @@ private:
 
     //static void call_wiring_event_handler(const void* param, const char *event_name, const char *data);
 
-    bool subscribe_wiring(const char *eventName, particle_core::wiring_event_handler_t handler, particle_core::Spark_Subscription_Scope_TypeDef scope, const char *deviceID = NULL);
+    bool subscribe_wiring(const char *eventName, particle_core::wiring_event_handler_t handler, Spark_Subscription_Scope_TypeDef scope, const char *deviceID = NULL);
 
     static const void* update_string_variable(const char* name, particle_core::Spark_Data_TypeDef type, const void* var, void* reserved);
 };

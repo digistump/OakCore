@@ -139,6 +139,7 @@ void CloudClass::initialize(bool isSystem) { return spark_initConfig(isSystem); 
 bool CloudClass::connected(void) { return spark_connected(); }
 bool CloudClass::disconnected(void) { return !connected(); }
 bool CloudClass::connect(void) { return spark_connect(); }
+void CloudClass::autoConnect(void) { spark_auto_connect(); }
 void CloudClass::disconnect(void) { spark_disconnect(); }
 void CloudClass::process(void) { spark_process(); }
 String CloudClass::deviceID(void) { return spark_deviceID(); }
@@ -211,6 +212,10 @@ void CloudClass::end()
 
 String CloudClass::pubKey(){
   return pubKey();
+}
+
+bool CloudClass::isClaimed(){
+  return isClaimed();
 }
 
 bool CloudClass::provisionKeys(bool force){//(bool force){

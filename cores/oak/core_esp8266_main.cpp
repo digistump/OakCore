@@ -100,9 +100,11 @@ extern "C" void optimistic_yield(uint32_t interval_us) {
 static void loop_wrapper() {
     static bool setup_done = false;
     if(!setup_done) {
+        Particle.initialize();
+        yield();
+        Particle.autoConnect();
         setup();
         setup_done = true;
-        Particle.initialize();
     }
     preloop_update_frequency();
     loop();

@@ -2,6 +2,7 @@
 #define particle_core_h
 
 #include "particle.h"
+#include "particle_globals.h"
 
 namespace particle_core {
 
@@ -119,6 +120,7 @@ const void *getUserVar(const char *varKey);
 
 int userFuncSchedule(const char *funcKey, const char *paramString, FunctionResultCallback callback, void* reserved);
 
+void spark_auto_connect(void);
 
 SubscriptionScope::Enum convert(Spark_Subscription_Scope_TypeDef subscription_type);
 
@@ -244,6 +246,13 @@ String setConfigFromJSON(String json);
 String configureApFromJSON(String json);
 bool provisionKeys(bool force);
 String pubKey();
+void set_system_mode(System_Mode_TypeDef mode);
+bool flashEraseSector(uint32_t sector);
+bool isClaimed(void);
+uint8_t currentRom(void);
+uint8_t configRom(void);
+uint8_t userRom(void);
+uint8_t updateRom(void);
 }; // particle_core
 
 

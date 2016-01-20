@@ -22,6 +22,7 @@
 
 namespace particle_core {
 
+
 typedef enum
 {
   IP_ADDRESS = 0, DOMAIN_NAME = 1, INVALID_INTERNET_ADDRESS = 0xff
@@ -70,16 +71,7 @@ typedef struct spark_variable_t
     const void* (*update)(const char* nane, Spark_Data_TypeDef type, const void* var, void* reserved);
 } spark_variable_t;
 
-typedef enum
-{
-  PUBLIC = 0, PRIVATE = 1
-} Spark_Event_TypeDef;
 
-typedef enum
-{
-  MY_DEVICES,
-  ALL_DEVICES
-} Spark_Subscription_Scope_TypeDef;
 
 
 struct CloudVariableTypeBase {};
