@@ -7,6 +7,12 @@
 namespace particle_core {
 
 bool check_image(uint8_t rom_number);
+
+void clear_factory_reason(void);
+uint8_t read_factory_reason(void);
+void init_bootloader_flags(void);
+void set_bootloader_reason_write_skip(void);
+void set_oakboot_defaults(uint8_t failure_rom);
 	
 typedef std::function<bool(const void*, SparkReturnType::Enum)> FunctionResultCallback;
 
@@ -215,6 +221,8 @@ bool particle_handshake();
 void rebootToUser();
 
 void rebootToConfig();
+
+void rebootToFallbackUpdater();
 
 String spark_deviceID();
 

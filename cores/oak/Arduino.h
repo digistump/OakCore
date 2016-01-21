@@ -271,9 +271,10 @@ long random(long, long);
 void randomSeed(unsigned long);
 long map(long, long, long, long, long);
 
-#include "OakParticle/Oak.h"
 #undef min
 #undef max
+#include "OakParticle/particle_globals.h"
+#include "OakParticle/Oak.h"
 #include "OakParticle/OakParticle.h"
 
 extern "C" void configTime(long timezone, int daylightOffset_sec,

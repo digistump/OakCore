@@ -6,12 +6,6 @@
 #include "events.h"
 #include "IPAddress.h"
 
-#define PRODUCT_ID 82
-#define PLATFORM_ID 82
-#define OAK_SYSTEM_VERSION_INTEGER 1
-#define OAK_SYSTEM_VERSION_MAJOR 1
-#define OAK_SYSTEM_VERSION_MINOR 0
-#define OAK_SYSTEM_VERSION_RELEASE 0
 
 #define MAX_COMMAND_LENGTH 14
 /* Length in bytes of DER-encoded 1024-bit RSA private key */

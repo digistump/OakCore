@@ -27,7 +27,6 @@ extern "C" {
 }
 #endif
 
-
 namespace particle_core {
 
 #define PROTOCOL_BUFFER_SIZE 800
@@ -1036,12 +1035,18 @@ int description(unsigned char *buf, unsigned char token,
     }
 
     if ((desc_flags&DESCRIBE_SYSTEM)) {
-      TODO SEND VERSION NUMBERS
     //if (descriptor.append_system_info && (desc_flags&DESCRIBE_SYSTEM)) {
       if (has_content)
         appender.append(',');
       //descriptor.append_system_info(append_instance, &appender, NULL);
-      appender.append("\"p\":82,\"m\":[]");
+      char number_buffer[4];
+      appender.append("\"p\":82,\"m\":[{\"s\":1040368,\"l\":\"m\",\"vc\":30,\"vv\":30,\"f\":\"s\",\"n\":\"1\",\"v\":");
+      sprintf(number_buffer,"%d",deviceConfig->system_version);
+      appender.append(number_buffer);
+      appender.append(",\"d\":[]},{\"s\":1040368,\"l\":\"m\",\"vc\":30,\"vv\":30,\"u\":\"0\",\"f\":\"u\",\"n\":\"1\",\"v\":1,\"d\":[{\"f\":\"s\",\"n\":\"1\",\"v\":");
+      sprintf(number_buffer,"%d",OAK_SYSTEM_VERSION_INTEGER);
+      appender.append(number_buffer);
+      appender.append(",\"_\":\"\"}]}]");
     }
     appender.append('}');
 
@@ -1678,13 +1683,13 @@ bool handle_update_begin(msg& message)
                 writeDeviceConfig();
               }
               else if(deviceConfig->system_update_pending == 1){
+                set_oakboot_defaults(0);
                 deviceConfig->system_update_pending = 2;
                 writeDeviceConfig();
               }
               else{
                 rebootToFallbackUpdater();
               }
-              TODO CHECK ABOVE
 
             }
             spark_send_event("oak/device/stderr","OTA Update Started", 60, PRIVATE, NULL); 
@@ -1725,7 +1730,7 @@ int finish_firmware_update(FileTransfer::Descriptor& file, uint32_t flags, void*
         }
 
         // check CRC and fall through if it fails
-        if(check_image(getOTAFlashSlot()){
+        if(check_image(getOTAFlashSlot())){
 
           deviceConfig->ota_success = 1;
           writeDeviceConfig();
@@ -2306,8 +2311,8 @@ int handshake(){
 #endif
 
 	err = blocking_send(queue + len, 256);
-  if (0 > err) { #ifdef DEBUG_SETUP
-	#ifdef DEBUG_SETUP
+  if (0 > err) { 
+  #ifdef DEBUG_SETUP
 	Serial.println(pClient.status());
 
 #endif 
@@ -2315,8 +2320,7 @@ int handshake(){
 	ERROR("Handshake: Unable to send key");
 #endif 
   return err;
-
-#endif }
+}
 	err = blocking_receive(queue, 384);
 	if (0 > err) { 
     #ifdef DEBUG_SETUP
@@ -2534,18 +2538,18 @@ bool particle_handshake(){
   spark_send_event("spark/hardware/ota_chunk_size", buf, 60, PRIVATE, NULL);
 
   ///if we want to be able to get a system update we need to send that we are in safe more right now
-  if (deviceConfig->system_version < OAK_SYSTEM_VERSION_INTEGER || system_update_pending > 0){
+  if (deviceConfig->system_version < OAK_SYSTEM_VERSION_INTEGER || deviceConfig->system_update_pending > 0){
     spark_send_event("spark/device/safemode" "", "", 60, PRIVATE, NULL);
   }
 
-TODO
+/*
   #if defined(SPARK_SUBSYSTEM_EVENT_NAME)
     if (!HAL_core_subsystem_version(buf, sizeof (buf)) && *buf)
     {
         spark_send_event("spark/" SPARK_SUBSYSTEM_EVENT_NAME, buf, 60, PRIVATE, NULL);
     }
   #endif
-
+*/
   #ifdef DEBUG_SETUP
 	INFO("SEND SUBS");
 #endif
@@ -2655,7 +2659,10 @@ void SystemEvents(const char* name, const char* data)
 
 void oak_rom_init(){
   #ifndef OAK_SYSTEM_ROM_4F616B
+    #pragma message "SYSTEM DEFINE NOT SET, DEFAULTING TO USER ROM"
     #define OAK_SYSTEM_ROM_4F616B 0
+  #else
+    #pragma message "SYSTEM DEFINE SET"
   #endif
   #ifdef OAK_SYSTEM_ROM_4F616B //DO NOT DEFINE THIS IN YOUR FILE OR IT MAY CORRUPT YOUR DEVICE
     if(OAK_SYSTEM_ROM_4F616B == 82 && deviceConfig->system_version < OAK_SYSTEM_VERSION_INTEGER){
@@ -2665,15 +2672,15 @@ void oak_rom_init(){
 
       sprintf(deviceConfig->version_string, "%d.%d.%d", OAK_SYSTEM_VERSION_MAJOR, OAK_SYSTEM_VERSION_MINOR, OAK_SYSTEM_VERSION_RELEASE);
       #ifdef DEBUG_SETUP
-	Serial.println(deviceConfig->version_string);
-
-#endif
+      	Serial.println(deviceConfig->version_string);
+      #endif
       //memcpy(deviceConfig->version_string,OAK_SYSTEM_VERSION_STRING,sizeof(OAK_SYSTEM_VERSION_STRING));
       if(bootConfig->config_rom != bootConfig->current_rom){ 
         bootConfig->config_rom = bootConfig->current_rom;
         writeBootConfig();
       }
       deviceConfig->system_update_pending = 0;
+      init_bootloader_flags();
       writeDeviceConfig();
       
       //go back to the user application
@@ -2685,6 +2692,7 @@ void oak_rom_init(){
         bootConfig->program_rom = bootConfig->current_rom;
         writeBootConfig();
       }
+      init_bootloader_flags();
     }
   #endif
 }
@@ -3537,6 +3545,56 @@ void set_system_mode(System_Mode_TypeDef mode){
     return;
   else
     system_mode = mode;
+}
+
+void set_oakboot_defaults(uint8_t failure_rom){ //0 = update rom, 1 = config rom, 2 = user rom
+  bool changed = false;
+
+  if(failure_rom != bootConfig->rom_on_swdt){
+    bootConfig->rom_on_swdt = failure_rom;
+    changed = true;
+  }
+  if(failure_rom != bootConfig->rom_on_hwdt){
+    bootConfig->rom_on_hwdt = failure_rom;
+    changed = true; 
+  }
+  if(failure_rom != bootConfig->rom_on_exception){
+    bootConfig->rom_on_exception = failure_rom;
+    changed = true;
+  }
+  if(failure_rom != bootConfig->rom_on_gpio){
+    bootConfig->rom_on_gpio = failure_rom; 
+    changed = true;
+  }
+  if(failure_rom != bootConfig->rom_on_invalid){
+    bootConfig->rom_on_invalid = failure_rom;
+    changed = true;
+  }
+  if(failure_rom != bootConfig->rom_on_reinit){
+    bootConfig->rom_on_reinit = failure_rom;
+    changed = true;
+  }
+  if(changed){
+    writeBootConfig();
+  }
+}
+void set_bootloader_reason_write_skip(void){
+  if(bootConfig->reset_write_skip != 1){
+    bootConfig->reset_write_skip = 1;
+    writeBootConfig();
+  }
+}
+void init_bootloader_flags(void){
+  set_bootloader_reason_write_skip();
+  set_oakboot_defaults(1);
+}
+uint8_t read_factory_reason(){
+  return bootConfig->factory_reason;
+}
+void clear_factory_reason(){
+  if(bootConfig->factory_reason != 'N')
+  bootConfig->factory_reason = 'N';
+  writeBootConfig();
 }
 
 }; // particle_core
