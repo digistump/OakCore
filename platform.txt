@@ -96,7 +96,10 @@ recipe.size.regex.data=^(?:\.data|\.rodata|\.bss)\s+([0-9]+).*
 
 tools.esptool_py.cmd=python
 tools.esptool_py.cmd.windows=python.exe
-tools.esptool_py.path={runtime.platform.path}/tools
+tools.esptool_py.path={runtime.platform.path}/tools/
+tools.esptool_py.upload.protocol=esp
+tools.esptool_py.upload.params.verbose=-vv
+tools.esptool_py.upload.params.quiet=
 tools.esptool_py.upload.pattern={cmd} "{path}/esptool.py" --baud {upload.speed} --port "{serial.port}" write_flash -fs {build.flash_size} {upload.flash_address} "{build.path}/{build.project_name}.bin" 
 
 
@@ -104,7 +107,11 @@ tools.mkspiffs.cmd=mkspiffs
 tools.mkspiffs.cmd.windows=mkspiffs.exe
 tools.mkspiffs.path={runtime.tools.mkspiffs.path}
 
+
 tools.oak_ota.cmd=oak
 tools.oak_ota.cmd.windows=oak.exe
-tools.oak_ota.path={runtime.tools.oak.path}
-tools.oak_ota.upload.pattern="{path}/{cmd}" "{build.path}/{build.project_name}.bin"
+tools.oak_ota.path={runtime.tools.oakcli.path}/
+tools.oak_ota.upload.protocol=esp
+tools.oak_ota.upload.params.verbose=-vv
+tools.oak_ota.upload.params.quiet=
+tools.oak_ota.upload.pattern= "{path}{cmd}" "{build.path}/{build.project_name}.bin" 
