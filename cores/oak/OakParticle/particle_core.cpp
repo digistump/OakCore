@@ -2792,12 +2792,16 @@ volatile uint8_t spark_transmit_buffer_tail = 0;
 volatile uint8_t spark_transmit_buffer_head = 0;
 volatile uint8_t spark_listening;
 volatile uint8_t spark_buffer_overflow;
+volatile uint8_t spark_serial_state = 0;
 
 void spark_serial_begin(){
     //don't allocate buffers until this is called
     spark_receive_buffer = new char[MAX_SERIAL_BUFF];
     spark_transmit_buffer = new char[MAX_SERIAL_BUFF];
-    spark_subscribe("oak/device/stdin", spark_get_rx, NULL, MY_DEVICES, NULL, NULL);
+    if(spark_serial_state == 0){
+      spark_subscribe("oak/device/stdin", spark_get_rx, NULL, MY_DEVICES, NULL, NULL);
+    }
+    spark_serial_state = 2;
 
 }
 
@@ -2808,6 +2812,7 @@ void spark_serial_end()
     spark_receive_buffer = NULL;
     delete[] spark_transmit_buffer;
     spark_transmit_buffer = NULL;
+    spark_serial_state = 1;
 }
 
 // Read data from buffer
@@ -2863,6 +2868,10 @@ int spark_serial_peek()
 
 
 void spark_get_rx(const char* name, const char* data){ //this is automatically called when new data comes from the cloud
+  if(spark_serial_state < 2){
+    return;
+  }
+
     if (data && *data) {
 
         while(*data != '\0'){
