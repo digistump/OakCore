@@ -1742,7 +1742,7 @@ int finish_firmware_update(FileTransfer::Descriptor& file, uint32_t flags, void*
 	Serial.println("DONE - RESTART");
 
 #endif
-          //TODO bootConfig->current_rom = getOTAFlashSlot();
+          bootConfig->current_rom = getOTAFlashSlot();
           spark_disconnect();
           delay(100);
           ESP.restart();
