@@ -6,7 +6,7 @@ using namespace particle_core;
 
 extern "C"{
     void ParticleProcess(void){
-        Particle.process();
+        spark_process(true);
     }
 }
 
@@ -138,10 +138,10 @@ bool CloudClass::syncTime(void)
 void CloudClass::initialize(bool isSystem) { return spark_initConfig(isSystem); }
 bool CloudClass::connected(void) { return spark_connected(); }
 bool CloudClass::disconnected(void) { return !connected(); }
-bool CloudClass::connect(void) { return spark_connect(); }
-void CloudClass::autoConnect(void) { spark_auto_connect(); }
+bool CloudClass::connect(bool internal) { return spark_auto_connect(internal); }
 void CloudClass::disconnect(void) { spark_disconnect(); }
-void CloudClass::process(void) { spark_process(); }
+void CloudClass::process(void) { spark_process(false); }
+void CloudClass::delay(uint32_t ms) { spark_delay(ms); }
 String CloudClass::deviceID(void) { return spark_deviceID(); }
 
 //private:
@@ -211,15 +211,15 @@ void CloudClass::end()
 }
 
 String CloudClass::pubKey(){
-  return pubKey();
+  return pub_key();
 }
 
 bool CloudClass::isClaimed(){
-  return isClaimed();
+  return is_claimed();
 }
 
 bool CloudClass::provisionKeys(bool force){//(bool force){
-   return provisionKeys(force);
+   return provision_keys(force);
 }
 
 CloudClass Particle;

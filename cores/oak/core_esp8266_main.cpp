@@ -83,7 +83,7 @@ extern "C" void __yield() {
         esp_yield();
     }
     else {
-        panic();
+       // panic();
     }
 }
 
@@ -100,7 +100,7 @@ extern "C" void optimistic_yield(uint32_t interval_us) {
 static void loop_wrapper() {
     static bool setup_done = false;
     if(!setup_done) {
-        Particle.autoConnect();
+        Particle.connect(true);
         setup();
         setup_done = true;
     }

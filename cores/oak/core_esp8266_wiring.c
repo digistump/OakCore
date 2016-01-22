@@ -41,7 +41,7 @@ void delay_end(void* arg) {
     esp_schedule();
 }
 
-void _delay(unsigned long ms) {  
+void delay(unsigned long ms) {  
     if(ms) {
         os_timer_setfn(&delay_timer, (os_timer_func_t*) &delay_end, 0);
         os_timer_arm(&delay_timer, ms, ONCE);
@@ -52,27 +52,6 @@ void _delay(unsigned long ms) {
     if(ms) {
         os_timer_disarm(&delay_timer);
     }
-}
-
-void delay(unsigned long ms) {
-    if(ms<1){
-        _delay(0);
-        return;
-    }
-
-    uint32_t start = millis();
-
-    if(ms>10){
-        while(millis()-start < ms-10){
-            ParticleProcess();
-            _delay(1);
-        }
-    }
-
-    ParticleProcess();
-    if((millis()-start) < ms)
-        _delay(ms - (millis()-start));
-    
 }
 
 void micros_overflow_tick(void* arg) {

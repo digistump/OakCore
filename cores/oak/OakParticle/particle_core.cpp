@@ -32,6 +32,9 @@ namespace particle_core {
 #define PROTOCOL_BUFFER_SIZE 800
 #define QUEUE_SIZE 800
 
+//this has to be aligned 
+uint8_t chunk_buffer[512];
+
 WiFiClient pClient; 
 
 static System_Mode_TypeDef system_mode = DEFAULT_MODE;
@@ -119,6 +122,8 @@ oak_config *deviceConfig = (oak_config*)config_buffer;
 uint8 boot_buffer[BOOT_CONFIG_SIZE];
 oakboot_config *bootConfig = (oakboot_config*)boot_buffer;
 
+
+volatile bool spark_connect_pending = false;
 
 byte device_id[12];
 
@@ -314,8 +319,16 @@ int blocking_send(const unsigned char *buf, int length)
   #ifdef DEBUG_SETUP
     Serial.println("BLSEND");
   #endif
-	pClient.setTimeout(2000);
+	pClient.setTimeout(100);
+  #ifdef DEBUG_SETUP
+  uint32_t start = millis();
+
+  #endif
 	int byte_count = pClient.write(buf, length);
+  #ifdef DEBUG_SETUP
+    Serial.println(byte_count);
+    Serial.println((millis()-start)/1000);
+  #endif
 	if(byte_count==0) 
 		byte_count = -1;
 	return byte_count;
@@ -971,10 +984,11 @@ String buffer_to_string(const uint8_t *buf,size_t length){
   }
   return result;
 }
-
+bool spark_describe_called = false;
 int description(unsigned char *buf, unsigned char token,
                                unsigned char message_id_msb, unsigned char message_id_lsb, int desc_flags)
 {
+    spark_describe_called = true;
     buf[0] = 0x61; // acknowledgment, one-byte token
     buf[1] = 0x45; // response code 2.05 CONTENT
     buf[2] = message_id_msb;
@@ -1563,7 +1577,7 @@ void writeBootConfig(){
 #define FLASH_MAX_SIZE          (unsigned long)(0x100000 - 0x2000)
 #define OTA_CHUNK_SIZE          (unsigned long)512
 
-uint32_t getOTAFlashSlot(){
+uint8_t getOTAFlashSlot(){
     if(bootConfig->program_rom != 0 && bootConfig->config_rom != 0)
       return 0;
     else if(bootConfig->program_rom != 4 && bootConfig->config_rom != 4)
@@ -1573,7 +1587,7 @@ uint32_t getOTAFlashSlot(){
 }
 
 bool status_led_state = false;
-#define STATUS_LED 5
+#define STATUS_LED 1
 void LED_Toggle(){
   status_led_state = !status_led_state;
   digitalWrite(STATUS_LED, status_led_state);
@@ -1614,7 +1628,6 @@ void set_chunks_received(uint8_t value)
 
 uint16_t last_chunk = 0;
 
-void spark_process();
 
 bool handle_update_begin(msg& message)
 {
@@ -1661,6 +1674,9 @@ bool handle_update_begin(msg& message)
     {
         if (!prepare_for_firmware_update(file, 0, NULL))
         {
+            #ifdef DEBUG_SETUP
+              Serial.println("F1");
+            #endif
             last_chunk_millis = millis();
             chunk_index = 0;
             chunk_size = file.chunk_size;   // save chunk size since the descriptor size is overwritten
@@ -1671,12 +1687,22 @@ bool handle_update_begin(msg& message)
             // know the correct size of the bitmap.
             set_chunks_received(flags & 1 ? 0 : 0xFF);
             // send update_reaady - use fast OTA if available
+            #ifdef DEBUG_SETUP
+              Serial.println("F2");
+            #endif
             update_ready(msg_to_send + 2, message.token, (flags & 0x1));
             if (0 > blocking_send(msg_to_send, 18))
             {
               // error
+            #ifdef DEBUG_SETUP
+              Serial.println("F3");
+            #endif
               return false;
+
             }
+            #ifdef DEBUG_SETUP
+              Serial.println("F4");
+            #endif
             if (deviceConfig->system_version < OAK_SYSTEM_VERSION_INTEGER || deviceConfig->system_update_pending > 0){
               if(deviceConfig->system_update_pending == 0){
                 deviceConfig->system_update_pending = 1;
@@ -1688,7 +1714,7 @@ bool handle_update_begin(msg& message)
                 writeDeviceConfig();
               }
               else{
-                rebootToFallbackUpdater();
+                reboot_to_fallback_updater();
               }
 
             }
@@ -1697,20 +1723,25 @@ bool handle_update_begin(msg& message)
     }
 
     //PUMP ONLY CLOUD WHIE UPDATING
-    #ifndef PARTICLE_OTA_TIMEOUT
-      uint32_t update_timeout = millis()+60000;//todo need to find a max for this?
-    #else
-      uint32_t update_timeout = millis()+PARTICLE_OTA_TIMEOUT;//todo need to find a max for this?
-    #endif
+    uint32_t update_timeout = millis()+360000;//todo need to find a max for this?
     while(updating>0 && millis()<update_timeout){
-      spark_process();
+      spark_process(false);
     }
+    //should never get here
+    ESP.restart();
     return true;
 }
 
 void spark_disconnect(){
   if(pClient.connected())
     pClient.stop();
+}
+
+void spark_delay(uint32_t ms){
+  uint32_t start = millis();
+  while((millis()-start)<ms){
+    spark_process(false);
+  }
 }
 
 int finish_firmware_update(FileTransfer::Descriptor& file, uint32_t flags, void* reserved)
@@ -1743,6 +1774,7 @@ int finish_firmware_update(FileTransfer::Descriptor& file, uint32_t flags, void*
 
 #endif
           bootConfig->current_rom = getOTAFlashSlot();
+          writeBootConfig();
           spark_disconnect();
           delay(100);
           ESP.restart();
@@ -1760,36 +1792,52 @@ int finish_firmware_update(FileTransfer::Descriptor& file, uint32_t flags, void*
     return 0;
 }
 
-bool flashEraseSector(uint32_t sector){
+bool flash_erase_sector(uint32_t sector){
   return (spi_flash_erase_sector(sector) == SPI_FLASH_RESULT_OK);
 }
 
-bool isClaimed(void){
+bool is_claimed(void){
   return deviceConfig->claimed == 1;
 }
 
-uint8_t currentRom(void){
+uint8_t current_rom(void){
   return bootConfig->current_rom;
 }
-uint8_t configRom(void){
+uint8_t config_rom(void){
   return bootConfig->config_rom;
 }
-uint8_t userRom(void){
+uint8_t user_rom(void){
   return bootConfig->program_rom;
 }
-uint8_t updateRom(void){
+uint8_t update_rom(void){
   return bootConfig->update_rom;
 }
 
 void save_firmware_chunk(FileTransfer::Descriptor& file, uint8_t* chunk, void* reserved)
 {
-    //todo ensure chunk is 512, else pad to 512 to ensure alignment
-    noInterrupts();
-    if(file.chunk_address%SECTOR_SIZE == 0)
-      spi_flash_erase_sector(file.chunk_address/SECTOR_SIZE);// != SPI_FLASH_RESULT_OK)
 
-    spi_flash_write(file.chunk_address, reinterpret_cast<uint32_t*>(chunk), OTA_CHUNK_SIZE);
-    interrupts();
+   #ifdef DEBUG_SETUP
+              Serial.println("S1");
+            #endif
+    //todo ensure chunk is 512, else pad to 512 to ensure alignment
+    //noInterrupts();
+    if(file.chunk_address%SECTOR_SIZE == 0){
+      if(spi_flash_erase_sector(file.chunk_address/SECTOR_SIZE) != SPI_FLASH_RESULT_OK){
+         #ifdef DEBUG_SETUP
+              Serial.println("SF");
+            #endif
+      }
+    }
+ #ifdef DEBUG_SETUP
+              Serial.println(file.chunk_address);
+            #endif
+              
+              memcpy(chunk_buffer,chunk,512);
+    spi_flash_write(file.chunk_address, reinterpret_cast<uint32_t*>(chunk_buffer), OTA_CHUNK_SIZE);
+    //interrupts();
+     #ifdef DEBUG_SETUP
+              Serial.println("S2");
+            #endif
 
     LED_Toggle();
 
@@ -1862,24 +1910,38 @@ bool handle_chunk(msg& message)
         uint32_t crc = crc32(chunk, file.chunk_size);
         bool has_response = false;
         bool crc_valid = (crc == given_crc);
-
+ #ifdef DEBUG_SETUP
+              Serial.println("C0");
+            #endif
         #ifdef DEBUG_SETUP
 	Serial.printf("chunk idx=%d crc=%d fast=%d updating=%d", chunk_index, crc_valid, fast_ota, updating);
 
 #endif
+   #ifdef DEBUG_SETUP
+              Serial.println("C00");
+            #endif
         if (crc_valid)
         {
+
+          #ifdef DEBUG_SETUP
+              Serial.println("C1");
+            #endif
 
             save_firmware_chunk(file, chunk, NULL);
             if (!fast_ota || (updating!=2 && (true || (chunk_index & 32)==0))) {
                 chunk_received(msg_to_send + 2, message.token, ChunkReceivedCode::OK);
                 has_response = true;
             }
+             #ifdef DEBUG_SETUP
+              Serial.println("C2");
+            #endif
             flag_chunk_received(chunk_index);
             if (updating==2) {                      // clearing up missed chunks at the end of fast OTA
                 chunk_index_t next_missed = next_chunk_missing(0);
                 if (next_missed==NO_CHUNKS_MISSING) {
-                    
+                    #ifdef DEBUG_SETUP
+              Serial.println("NO MISS");
+            #endif
                     notify_update_done(msg_to_send);
                     finish_firmware_update(file, 1, NULL);
                     
@@ -1901,14 +1963,22 @@ bool handle_chunk(msg& message)
         }
         else if (!fast_ota)
         {
+           #ifdef DEBUG_SETUP
+              Serial.println("C3");
+            #endif
             chunk_received(msg_to_send + 2, message.token, ChunkReceivedCode::BAD);
             has_response = true;
             //serial_dump("chunk bad %d", chunk_index);
         }
         // fast OTA will request the chunk later
-
+#ifdef DEBUG_SETUP
+              Serial.println("C4");
+            #endif
         if (has_response && 0 > blocking_send(msg_to_send, 18))
         {
+          #ifdef DEBUG_SETUP
+              Serial.println("C5");
+            #endif
           // error
           return false;
         }
@@ -2169,11 +2239,17 @@ bool event_loop(CoAPMessageType::Enum& message_type)
     if (message_type==CoAPMessageType::ERROR)
     {
         if (updating) {      // was updating but had an error, inform the client
+          #ifdef DEBUG_SETUP
+              Serial.println("up error");
+            #endif
             finish_firmware_update(file, 0, NULL);
             updating = false;
         }
 
       // bail if and only if there was an error
+ #ifdef DEBUG_SETUP
+  INFO("UPDATE ERROR");
+#endif
       return false;
     }
   }
@@ -2182,6 +2258,9 @@ bool event_loop(CoAPMessageType::Enum& message_type)
     if (0 > bytes_received)
     {
       // error, disconnected
+#ifdef DEBUG_SETUP
+  INFO("DISCONNECT");
+#endif
       return false;
     }
 
@@ -2192,8 +2271,12 @@ bool event_loop(CoAPMessageType::Enum& message_type)
       {
           if (updating==2) {    // send missing chunks
               //serial_dump("timeout - resending missing chunks");
-              if (!send_missing_chunks(MISSED_CHUNKS_TO_SEND))
+              if (!send_missing_chunks(MISSED_CHUNKS_TO_SEND)){
+                 #ifdef DEBUG_SETUP
+  INFO("CHUNK ERROR");
+#endif
                   return false;
+                }
           }
           /* Do not resend chunks since this can cause duplicates on the server.
           else
@@ -2273,7 +2356,10 @@ bool event_loop()
 
 
 int handshake(){
-  pClient.setNoDelay(false);
+
+   #ifdef DEBUG_SETUP
+  INFO("SHAKE");
+#endif  
   #ifdef DEBUG_SETUP
 	Serial.println(pClient.status());
 
@@ -2293,6 +2379,10 @@ int handshake(){
 
 	memcpy(queue+52, deviceConfig->device_public_key,PUBLIC_KEY_LENGTH);
 
+   #ifdef DEBUG_SETUP
+  INFO("SHAKE1");
+#endif  
+
 	rsa_context rsa;
 	init_rsa_context_with_public_key(&rsa, deviceConfig->server_public_key);
 	const int len = 52+PUBLIC_KEY_LENGTH;
@@ -2310,7 +2400,14 @@ int handshake(){
 
 #endif
 
+     #ifdef DEBUG_SETUP
+  INFO("SHAKE2");
+#endif  
+
 	err = blocking_send(queue + len, 256);
+     #ifdef DEBUG_SETUP
+  INFO("SHAKE3");
+#endif  
   if (0 > err) { 
   #ifdef DEBUG_SETUP
 	Serial.println(pClient.status());
@@ -2321,12 +2418,21 @@ int handshake(){
 #endif 
   return err;
 }
+
+   #ifdef DEBUG_SETUP
+  INFO("SHAKE4");
+#endif  
+
 	err = blocking_receive(queue, 384);
 	if (0 > err) { 
     #ifdef DEBUG_SETUP
 	ERROR("Handshake: Unable to receive key");
 #endif 
     return err; }
+
+        #ifdef DEBUG_SETUP
+  INFO("SET KEY");
+#endif  
 
 	err = set_key(queue);
 	if (err) { 
@@ -2335,8 +2441,16 @@ int handshake(){
 #endif 
     return err; }
 
+    #ifdef DEBUG_SETUP
+  INFO("SEND HELLO");
+#endif  
+
 	//gets reset on response in handle message
 	hello(queue, deviceConfig->ota_success);
+
+      #ifdef DEBUG_SETUP
+  INFO("GET HELLO RESPONSE");
+#endif  
 
 	err = blocking_send(queue, 18);
 	if (0 > err) { 
@@ -2344,6 +2458,10 @@ int handshake(){
 	ERROR("Hanshake: could not send hello message");
 #endif 
     return err; }
+
+        #ifdef DEBUG_SETUP
+  INFO("WAIT FOR SERVER HELLO");
+#endif  
 
 	if (!event_loop(CoAPMessageType::HELLO, 2000))        // read the hello message from the server
 	{
@@ -2396,8 +2514,8 @@ void remove_event_handlers(const char* event_name)
 
 bool particleConnect(){
 	if(deviceConfig->server_address_type == 1){
-		//return client.connect(deviceConfig->server_address_domain,SPARK_SERVER_PORT);
-    return pClient.connect("staging-device.spark.io",SPARK_SERVER_PORT);
+		return client.connect(deviceConfig->server_address_domain,SPARK_SERVER_PORT);
+    //return pClient.connect("staging-device.spark.io",SPARK_SERVER_PORT);
 		//return pClient.connect(IPAddress(192,168,0,111),SPARK_SERVER_PORT);
 	}
 	else{
@@ -2444,8 +2562,7 @@ bool wifiWaitForConnection(){ //returns false if it times out - I will later add
     //timeout after 15 seconds
     if(millis() > timeoutTime){
         return false;
-      }
-      delay(100);
+    }
   }
   return true;
 }
@@ -2473,7 +2590,7 @@ bool readDeviceConfig(bool isSystem){
         writeDeviceConfig();
       }
       else{
-       rebootToConfig();
+       reboot_to_config();
 	     return false;
      }
 	}
@@ -2519,10 +2636,14 @@ bool send_time_request(void)
 bool particle_handshake(){
 
   char buf[65];
-
+#ifdef DEBUG_SETUP
+  INFO("START HANDSHAKE");
+#endif
   if(handshake()<0)
     return false;
-
+#ifdef DEBUG_SETUP
+  INFO("END HANDSHAKE");
+#endif
   #ifdef DEBUG_SETUP
 	INFO("SEND EVENTS");
 #endif
@@ -2563,28 +2684,32 @@ bool particle_handshake(){
   #ifdef DEBUG_SETUP
 	INFO("LOOP");
 #endif
-  event_loop();
+  if(!event_loop()){
+    #ifdef DEBUG_SETUP
+  ERROR("SHAKE LOOP FAIL");
+#endif
+  }
   return true;
 }
 
 
 
 
-void rebootToUser(){
+void reboot_to_user(){
   if(bootConfig->current_rom != bootConfig->program_rom)
     bootConfig->current_rom = bootConfig->program_rom;
   ESP.restart();
   while(1);
 }
 
-void rebootToConfig(){
+void reboot_to_config(){
   if(bootConfig->current_rom != bootConfig->config_rom)
     bootConfig->current_rom = bootConfig->config_rom;
   ESP.restart();
   while(1);
 }
 
-void rebootToFallbackUpdater(){
+void reboot_to_fallback_updater(){
   if(bootConfig->current_rom != bootConfig->update_rom)
     bootConfig->current_rom = bootConfig->update_rom;
   ESP.restart();
@@ -2611,7 +2736,7 @@ void SystemEvents(const char* name, const char* data)
     if (!strcmp(name, RESET_EVENT)) {
         if (data && *data) {
             if (!strcmp("safe mode", data))
-                rebootToConfig();
+                reboot_to_config();
             else if (!strcmp("dfu", data))
               return;
             else if (!strcmp("reboot", data))
@@ -2621,11 +2746,11 @@ void SystemEvents(const char* name, const char* data)
     if (!strcmp(name, OAK_RESET_EVENT)) {
         if (data && *data) {
             if (!strcmp("config mode", data))
-                rebootToConfig();
+                reboot_to_config();
             else if (!strcmp("user mode", data))
-                rebootToUser();
+                reboot_to_user();
             else if (!strcmp("update mode", data))
-                rebootToFallbackUpdater();
+                reboot_to_fallback_updater();
             else if (!strcmp("reboot", data))
                 ESP.reset();
         }
@@ -2677,6 +2802,7 @@ void oak_rom_init(){
       //memcpy(deviceConfig->version_string,OAK_SYSTEM_VERSION_STRING,sizeof(OAK_SYSTEM_VERSION_STRING));
       if(bootConfig->config_rom != bootConfig->current_rom){ 
         bootConfig->config_rom = bootConfig->current_rom;
+        bootConfig->update_rom = bootConfig->current_rom+2;
         writeBootConfig();
       }
       deviceConfig->system_update_pending = 0;
@@ -2684,7 +2810,7 @@ void oak_rom_init(){
       writeDeviceConfig();
       
       //go back to the user application
-      rebootToUser();
+      reboot_to_user();
     }
     else if(OAK_SYSTEM_ROM_4F616B != 82){
       //this is a new user rom, we have booted so set user rom to this
@@ -2717,12 +2843,14 @@ void spark_initConfig(bool isSystem){
 bool spark_internal_connect(){
   if(!spark_initialized)
     spark_initConfig(false);
+  spark_connect_pending = true;
   if(!wifiConnected()){
     if(!wifiConnect()){
       #ifdef DEBUG_SETUP
 	Serial.println("WIFI");
 
 #endif
+      spark_connect_pending = false;
       return false;
     }
     if(!wifiWaitForConnection()){
@@ -2730,6 +2858,7 @@ bool spark_internal_connect(){
 	Serial.println("WAIT");
 
 #endif
+      spark_connect_pending = false;
       return false;
     }
   }
@@ -2739,27 +2868,63 @@ bool spark_internal_connect(){
 	Serial.println("Particle");
 
 #endif
+      spark_connect_pending = false;
       return false;
+    }
+    else{
+      //we just connected
+      spark_describe_called = false;
     }
     if(!particle_handshake()){
       #ifdef DEBUG_SETUP
 	Serial.println("SHAKE");
 
 #endif
+      spark_connect_pending = false;
       return false;
     }
 
   }
+  spark_connect_pending = false;
   return true;
 } 
 
 uint8_t spark_failed_connects = 0;
+bool spark_ok_to_connect = false;
+
 uint32_t spark_last_failed_connect = 0;
 
-void spark_auto_connect(){
-  if(system_mode>1)
-    return;
+bool spark_auto_connect(bool internal){
+  if(system_mode>1 && internal)
+    return false;
+
+  spark_ok_to_connect = true;
+  #ifdef DEBUG_SETUP
+    Serial.println("AUTO CONNECT");
+  #endif
   while(!spark_connect() && spark_failed_connects < 3){yield();};
+  #ifdef DEBUG_SETUP
+    Serial.println("END AUTO CONNECT");
+  #endif
+  if(spark_failed_connects == 3)
+    return false;
+  else{
+    //pump events until describe
+    //uint32_t desc_start = millis();
+    /*while(!spark_describe_called && millis()-desc_start<3000){
+      #ifdef DEBUG_SETUP
+    Serial.println("DESC PUMP");
+  #endif
+      spark_process();
+    }*/
+    //pump 5 times
+    uint8_t pumpLoop = 5;
+    while(pumpLoop-->0){
+      spark_process();
+    }
+    return true;
+  }
+
 }
 
 bool spark_connect(){
@@ -2779,6 +2944,42 @@ bool spark_connect(){
     }
   }
   return false;
+}
+
+void spark_process(bool internal)
+{
+    if(!internal)
+      yield();
+    else if(system_mode == 3)
+      return;
+    if(spark_connect_pending){
+        #ifdef DEBUG_SETUP
+              ERROR("ALREADY PENDING");
+            #endif
+      return;
+    }
+    if(spark_connected()){
+        spark_send_tx();
+        if(!event_loop()){
+            if(pClient.connected()){
+              pClient.stop();
+            }
+            #ifdef DEBUG_SETUP
+              ERROR("EVENT LOOP FAIL!");
+            #endif
+            return;
+        }
+    }
+    else{
+      #ifdef DEBUG_SETUP
+              ERROR("NO CONNECT");
+            #endif
+      if(system_mode < 2 || spark_ok_to_connect)
+        spark_connect();
+      else
+        return;
+    }
+    lastCloudEvent = millis();
 }
 
 #define MAX_SERIAL_BUFF 256
@@ -2910,27 +3111,7 @@ void spark_send_tx(){
     spark_send_event("oak/device/stdout", buff, 60, PRIVATE, NULL);
 }
 
-void spark_process()
-{
-    yield();
-    if(spark_connected()){
-        spark_send_tx();
-        if(!event_loop()){
-            spark_disconnect();
-            #ifdef DEBUG_SETUP
-	ERROR("EVENT LOOP FAIL!");
-#endif
-            return;
-        }
-    }
-    else{
-      if(system_mode < 2)
-        spark_connect();
-      else
-        return;
-    }
-    lastCloudEvent = millis();
-}
+
 
 
 
@@ -3202,7 +3383,7 @@ bool IPAddressFromString(IPAddress &ipaddress, const char *address)
 }
 
 
-String infoResponse(void){
+String info_response(void){
 
   String response = "{\"id\":\"";
   response += deviceConfig->device_id;
@@ -3254,7 +3435,7 @@ String infoResponse(void){
   return response;
 }
 
-String setConfigFromJSON(String json){
+String set_config_from_JSON(String json){
 
   String valueString;
   uint8_t gotSomething = false;
@@ -3445,7 +3626,7 @@ String setConfigFromJSON(String json){
   }
 }
 
-String configureApFromJSON(String json){
+String configure_ap_from_JSON(String json){
 
   int16_t valueStart = json.indexOf("\"ssid\":\"");
   if(valueStart<0)
@@ -3505,7 +3686,7 @@ String configureApFromJSON(String json){
 }
 
 
-String pubKey(){
+String pub_key(){
   String response;
   const int length = 162;
   const uint8_t* data = deviceConfig->device_public_key;
@@ -3517,9 +3698,10 @@ String pubKey(){
   return response;
 }
 
-bool provisionKeys(bool force){//(bool force){
-    if(deviceConfig->device_private_key[0] != 0x00 && deviceConfig->device_private_key[0] != 0xFF && !force)
+bool provision_keys(bool force){//(bool force){
+    if(deviceConfig->device_private_key[0] != 0x00 && deviceConfig->device_private_key[0] != 0xFF && !force){
         return true;
+      }
   #ifdef DEBUG_SETUP
     Serial.println("Provision Keys");
   #endif
@@ -3555,7 +3737,9 @@ void set_system_mode(System_Mode_TypeDef mode){
   else
     system_mode = mode;
 }
-
+System_Mode_TypeDef get_system_mode(void){
+  return system_mode;
+}
 void set_oakboot_defaults(uint8_t failure_rom){ //0 = update rom, 1 = config rom, 2 = user rom
   bool changed = false;
 

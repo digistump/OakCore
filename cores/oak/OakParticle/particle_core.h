@@ -114,6 +114,7 @@ bool send_subscription(const char *event_name,
                                       SubscriptionScope::Enum scope);
 
 void send_subscriptions();
+void spark_delay(uint32_t ms);
 
 bool event_handler_exists(const char *event_name, EventHandler handler,
     void *handler_data, SubscriptionScope::Enum scope, const char* id);
@@ -126,7 +127,7 @@ const void *getUserVar(const char *varKey);
 
 int userFuncSchedule(const char *funcKey, const char *paramString, FunctionResultCallback callback, void* reserved);
 
-void spark_auto_connect(void);
+bool spark_auto_connect(bool internal);
 
 SubscriptionScope::Enum convert(Spark_Subscription_Scope_TypeDef subscription_type);
 
@@ -187,7 +188,7 @@ bool readBootConfig();
 
 void writeBootConfig();
 
-uint32_t getOTAFlashSlot();
+uint8_t getOTAFlashSlot();
 
 void LED_Toggle();
 
@@ -218,11 +219,11 @@ bool send_time_request(void);
 
 bool particle_handshake();
 
-void rebootToUser();
+void reboot_to_user();
 
-void rebootToConfig();
+void reboot_to_config();
 
-void rebootToFallbackUpdater();
+void reboot_to_fallback_updater();
 
 String spark_deviceID();
 
@@ -247,20 +248,21 @@ void spark_serial_flush();
 int spark_serial_peek();
 void spark_get_rx(const char* name, const char* data);
 void spark_send_tx();
-void spark_process();
+void spark_process(bool internal = false);
 
-String infoResponse(void);
-String setConfigFromJSON(String json);
-String configureApFromJSON(String json);
-bool provisionKeys(bool force);
-String pubKey();
+String info_response(void);
+String set_config_from_JSON(String json);
+String configure_ap_from_JSON(String json);
+bool provision_keys(bool force);
+String pub_key();
 void set_system_mode(System_Mode_TypeDef mode);
-bool flashEraseSector(uint32_t sector);
-bool isClaimed(void);
-uint8_t currentRom(void);
-uint8_t configRom(void);
-uint8_t userRom(void);
-uint8_t updateRom(void);
+System_Mode_TypeDef get_system_mode(void);
+bool flash_erase_sector(uint32_t sector);
+bool is_claimed(void);
+uint8_t current_rom(void);
+uint8_t config_rom(void);
+uint8_t user_rom(void);
+uint8_t update_rom(void);
 }; // particle_core
 
 

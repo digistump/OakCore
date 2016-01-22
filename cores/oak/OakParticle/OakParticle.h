@@ -148,11 +148,12 @@ public:
     static void initialize(bool isSystem = false);
     static bool connected(void);
     static bool disconnected(void);
-    static bool connect(void);
-    static void autoConnect(void);
+    static bool connect(bool internal = false);
     static void disconnect(void);
     static void process(void);
+    static void delay(uint32_t ms);
     static String deviceID(void);
+
 
 private:
     //static bool register_function(cloud_function_t fn, void* data, const char* funcKey);
@@ -164,7 +165,13 @@ private:
     bool subscribe_wiring(const char *eventName, particle_core::wiring_event_handler_t handler, Spark_Subscription_Scope_TypeDef scope, const char *deviceID = NULL);
 
     static const void* update_string_variable(const char* name, particle_core::Spark_Data_TypeDef type, const void* var, void* reserved);
+
+
+
+
 };
+
+
 
 extern CloudClass Particle;
 extern "C"{
