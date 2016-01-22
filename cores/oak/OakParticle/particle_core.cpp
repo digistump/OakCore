@@ -2514,7 +2514,7 @@ void remove_event_handlers(const char* event_name)
 
 bool particleConnect(){
 	if(deviceConfig->server_address_type == 1){
-		return client.connect(deviceConfig->server_address_domain,SPARK_SERVER_PORT);
+		return pClient.connect(deviceConfig->server_address_domain,SPARK_SERVER_PORT);
     //return pClient.connect("staging-device.spark.io",SPARK_SERVER_PORT);
 		//return pClient.connect(IPAddress(192,168,0,111),SPARK_SERVER_PORT);
 	}
