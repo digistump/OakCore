@@ -97,10 +97,10 @@
           "category": "Digistump",
           "url": "https://github.com/digistump/OakCore/releases/download/0.9.0/core.zip",
           "archiveFileName": "core.zip",
-          "checksum": "SHA-256:0000000000000000000000000000000000000000000000000000000000000000",
-          "size": "22030737",
+          "checksum": "SHA-256:917EE7AAF7DCA074B12163414CF6430DFD64D16CCB024671AA199A7B22258FCE",
+          "size": "5920865",
           "help": {
-            "online": "https://github.com/digistump/OakCore/issues"
+            "online": "http://digistump.com/wiki/oak"
           },
           "boards": [
             {"name": "Oak by Digistump"}
@@ -241,15 +241,15 @@
               "host": "i686-linux-gnu",
               "url": "https://github.com/digistump/OakCLI/releases/download/0.9.0/oakcli-linux32.tar.gz",
               "archiveFileName": "oakcli-linux32.tar.gz",
-              "checksum": "SHA-256:3B420162FD0227776809CC2B0AFE0DC6D73E8C5379097CFDC75D1AF5D3278D01",
-              "size": "18575360"
+              "checksum": "SHA-256:D9696E68458CB1AE3F7A41F5B739A58B594F86E3C74573A1A13164049089E870",
+              "size": "6688431"
             },
             {
               "host": "x86_64-pc-linux-gnu",
               "url": "https://github.com/digistump/OakCLI/releases/download/0.9.0/oakcli-linux64.tar.gz",
               "archiveFileName": "oakcli-linux64.tar.gz",
-              "checksum": "SHA-256:EA961CE2CF40D5141BA0F1E32AD2CE781C959AA1CFF71C7A869955479B7BB6BF",
-              "size": "20654080"
+              "checksum": "SHA-256:9441951AB1E9C375D150BC7EE5097FE3FB6C411751D28E22EA54D77F41FC3FCF",
+              "size": "7173419"
             },
             {
               "host": "i686-mingw32",
@@ -275,15 +275,15 @@
               "host": "i686-linux-gnu",
               "url": "https://github.com/digistump/OakCore/releases/download/0.9.0/esptool2-linux32.tar.gz",
               "archiveFileName": "esptool2-linux32.tar.gz",
-              "checksum": "SHA-256:5B0511C691018CBE8431D01F497F9B860D26839F0B584BBD3927FFFB48A0B303",
-              "size": "20480"
+              "checksum": "SHA-256:58727CB7D7CB9F0DA7DE85004C772D0BE1CDF2508E4202C01669B80296FC26C9",
+              "size": "8577"
             },
             {
               "host": "x86_64-pc-linux-gnu",
               "url": "https://github.com/digistump/OakCore/releases/download/0.9.0/esptool2-linux64.tar.gz",
               "archiveFileName": "esptool2-linux64.tar.gz",
-              "checksum": "SHA-256:C9F70E52167393B37A6BD34A6B5749FF507350320AE086F7B7EE91EB41317806",
-              "size": "30720"
+              "checksum": "SHA-256:3A34BBC40879B912328CFF685F17AE7E995AA4FB8CD85FFB6865A2E9EB8276AF",
+              "size": "8667"
             },
             {
               "host": "i686-mingw32",

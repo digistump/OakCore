@@ -319,39 +319,39 @@ int blocking_send(const unsigned char *buf, int length)
   #ifdef DEBUG_SETUP
     Serial.println("BLSEND");
   #endif
-	pClient.setTimeout(100);
+  pClient.setTimeout(100);
   #ifdef DEBUG_SETUP
   uint32_t start = millis();
 
   #endif
-	int byte_count = pClient.write(buf, length);
+  int byte_count = pClient.write(buf, length);
   #ifdef DEBUG_SETUP
     Serial.println(byte_count);
     Serial.println((millis()-start)/1000);
   #endif
-	if(byte_count==0) 
-		byte_count = -1;
-	return byte_count;
+  if(byte_count==0) 
+    byte_count = -1;
+  return byte_count;
 }
 
 // Returns bytes received or -1 on error
 int receive(unsigned char *buf, int length)
 {
 
-	pClient.setTimeout(2000);
-	int available = pClient.available();
-	if(available >= length){
-		return pClient.readBytes(buf, length);
-	}
-	else if(available > 0){
-		return pClient.readBytes(buf, available);
-	}
-	else{
-		if(!spark_connected())
-			return -1;
-		else
-			return 0;
-	}
+  pClient.setTimeout(2000);
+  int available = pClient.available();
+  if(available >= length){
+    return pClient.readBytes(buf, length);
+  }
+  else if(available > 0){
+    return pClient.readBytes(buf, available);
+  }
+  else{
+    if(!spark_connected())
+      return -1;
+    else
+      return 0;
+  }
 }
 
 // Returns bytes received or -1 on error
@@ -360,14 +360,14 @@ int blocking_receive(unsigned char *buf, int length)
   if(!spark_connected())
     return -1;
   #ifdef DEBUG_SETUP
-	Serial.println("BLRECV");
+  Serial.println("BLRECV");
 
 #endif
-	pClient.setTimeout(2000);
-	int byte_count = pClient.readBytes(buf, length);
-	if(byte_count==0) 
-		byte_count = -1;
-	return byte_count;
+  pClient.setTimeout(2000);
+  int byte_count = pClient.readBytes(buf, length);
+  if(byte_count==0) 
+    byte_count = -1;
+  return byte_count;
 }
 
 
@@ -1596,7 +1596,7 @@ void LED_Toggle(){
 int prepare_for_firmware_update(FileTransfer::Descriptor& file, uint32_t flags, void* reserved)
 {
     #ifdef DEBUG_SETUP
-	Serial.println("FIRMWARE");
+  Serial.println("FIRMWARE");
 
 #endif
     file.file_address = bootConfig->roms[getOTAFlashSlot()];// + file.chunk_address;
@@ -1748,7 +1748,7 @@ int finish_firmware_update(FileTransfer::Descriptor& file, uint32_t flags, void*
 {
 
     #ifdef DEBUG_SETUP
-	Serial.println("UPDATE FINISHED - REBOOT ME");
+  Serial.println("UPDATE FINISHED - REBOOT ME");
 
 #endif
     if (flags & 1) {    // update successful
@@ -1770,7 +1770,7 @@ int finish_firmware_update(FileTransfer::Descriptor& file, uint32_t flags, void*
           delay(500);
 
           #ifdef DEBUG_SETUP
-	Serial.println("DONE - RESTART");
+  Serial.println("DONE - RESTART");
 
 #endif
           bootConfig->current_rom = getOTAFlashSlot();
@@ -1914,7 +1914,7 @@ bool handle_chunk(msg& message)
               Serial.println("C0");
             #endif
         #ifdef DEBUG_SETUP
-	Serial.printf("chunk idx=%d crc=%d fast=%d updating=%d", chunk_index, crc_valid, fast_ota, updating);
+  Serial.printf("chunk idx=%d crc=%d fast=%d updating=%d", chunk_index, crc_valid, fast_ota, updating);
 
 #endif
    #ifdef DEBUG_SETUP
@@ -1998,7 +1998,7 @@ bool handle_update_done(msg& message)
     *msg_to_send = 0;
     *(msg_to_send + 1) = 16;
     #ifdef DEBUG_SETUP
-	Serial.println("update done received");
+  Serial.println("update done received");
 
 #endif
     chunk_index_t index = next_chunk_missing(0);
@@ -2012,7 +2012,7 @@ bool handle_update_done(msg& message)
 
     if (!missing) {
         #ifdef DEBUG_SETUP
-	Serial.println("update done - all done!");
+  Serial.println("update done - all done!");
 
 #endif
         finish_firmware_update(file, 1, NULL);
@@ -2020,7 +2020,7 @@ bool handle_update_done(msg& message)
     else {
         updating = 2;       // flag that we are sending missing chunks.
         #ifdef DEBUG_SETUP
-	Serial.println("update done - missing chunks");
+  Serial.println("update done - missing chunks");
 
 #endif
         send_missing_chunks(MISSED_CHUNKS_TO_SEND);
@@ -2305,7 +2305,7 @@ bool event_loop(CoAPMessageType::Enum& message_type)
           expecting_ping_ack = false;
           last_message_millis = millis();
           #ifdef DEBUG_SETUP
-	ERROR("FAILED4");
+  ERROR("FAILED4");
 #endif
           return false;
         }
@@ -2361,42 +2361,42 @@ int handshake(){
   INFO("SHAKE");
 #endif  
   #ifdef DEBUG_SETUP
-	Serial.println(pClient.status());
+  Serial.println(pClient.status());
 
 #endif
-	memcpy(queue + 40, device_id, 12);
-	int err = blocking_receive(queue, 40);;
+  memcpy(queue + 40, device_id, 12);
+  int err = blocking_receive(queue, 40);;
   #ifdef DEBUG_SETUP
-	Serial.println(err);
+  Serial.println(err);
 
 #endif
-	if (0 > err) { 
+  if (0 > err) { 
     #ifdef DEBUG_SETUP
-	ERROR("Handshake: could not receive nonce");
+  ERROR("Handshake: could not receive nonce");
 #endif  
     return err; 
   }
 
-	memcpy(queue+52, deviceConfig->device_public_key,PUBLIC_KEY_LENGTH);
+  memcpy(queue+52, deviceConfig->device_public_key,PUBLIC_KEY_LENGTH);
 
    #ifdef DEBUG_SETUP
   INFO("SHAKE1");
 #endif  
 
-	rsa_context rsa;
-	init_rsa_context_with_public_key(&rsa, deviceConfig->server_public_key);
-	const int len = 52+PUBLIC_KEY_LENGTH;
-	err = rsa_pkcs1_encrypt(&rsa, RSA_PUBLIC, len, queue, queue + len);
-	rsa_free(&rsa);
+  rsa_context rsa;
+  init_rsa_context_with_public_key(&rsa, deviceConfig->server_public_key);
+  const int len = 52+PUBLIC_KEY_LENGTH;
+  err = rsa_pkcs1_encrypt(&rsa, RSA_PUBLIC, len, queue, queue + len);
+  rsa_free(&rsa);
 
-	if (err) { 
+  if (err) { 
     #ifdef DEBUG_SETUP
-	ERROR("Handshake: rsa encrypt error");
+  ERROR("Handshake: rsa encrypt error");
 #endif 
     return err; }
 
   #ifdef DEBUG_SETUP
-	Serial.println(pClient.status());
+  Serial.println(pClient.status());
 
 #endif
 
@@ -2404,17 +2404,17 @@ int handshake(){
   INFO("SHAKE2");
 #endif  
 
-	err = blocking_send(queue + len, 256);
+  err = blocking_send(queue + len, 256);
      #ifdef DEBUG_SETUP
   INFO("SHAKE3");
 #endif  
   if (0 > err) { 
   #ifdef DEBUG_SETUP
-	Serial.println(pClient.status());
+  Serial.println(pClient.status());
 
 #endif 
   #ifdef DEBUG_SETUP
-	ERROR("Handshake: Unable to send key");
+  ERROR("Handshake: Unable to send key");
 #endif 
   return err;
 }
@@ -2423,10 +2423,10 @@ int handshake(){
   INFO("SHAKE4");
 #endif  
 
-	err = blocking_receive(queue, 384);
-	if (0 > err) { 
+  err = blocking_receive(queue, 384);
+  if (0 > err) { 
     #ifdef DEBUG_SETUP
-	ERROR("Handshake: Unable to receive key");
+  ERROR("Handshake: Unable to receive key");
 #endif 
     return err; }
 
@@ -2434,10 +2434,10 @@ int handshake(){
   INFO("SET KEY");
 #endif  
 
-	err = set_key(queue);
-	if (err) { 
+  err = set_key(queue);
+  if (err) { 
     #ifdef DEBUG_SETUP
-	ERROR("Handshake:  could not set key");
+  ERROR("Handshake:  could not set key");
 #endif 
     return err; }
 
@@ -2445,17 +2445,17 @@ int handshake(){
   INFO("SEND HELLO");
 #endif  
 
-	//gets reset on response in handle message
-	hello(queue, deviceConfig->ota_success);
+  //gets reset on response in handle message
+  hello(queue, deviceConfig->ota_success);
 
       #ifdef DEBUG_SETUP
   INFO("GET HELLO RESPONSE");
 #endif  
 
-	err = blocking_send(queue, 18);
-	if (0 > err) { 
+  err = blocking_send(queue, 18);
+  if (0 > err) { 
     #ifdef DEBUG_SETUP
-	ERROR("Hanshake: could not send hello message");
+  ERROR("Hanshake: could not send hello message");
 #endif 
     return err; }
 
@@ -2463,17 +2463,17 @@ int handshake(){
   INFO("WAIT FOR SERVER HELLO");
 #endif  
 
-	if (!event_loop(CoAPMessageType::HELLO, 2000))        // read the hello message from the server
-	{
-	  #ifdef DEBUG_SETUP
-	ERROR("Handshake: could not receive hello response");
+  if (!event_loop(CoAPMessageType::HELLO, 2000))        // read the hello message from the server
+  {
+    #ifdef DEBUG_SETUP
+  ERROR("Handshake: could not receive hello response");
 #endif
-	  return -1;
-	}
-	#ifdef DEBUG_SETUP
-	INFO("Hanshake: completed");
+    return -1;
+  }
+  #ifdef DEBUG_SETUP
+  INFO("Hanshake: completed");
 #endif
-	return 0;
+  return 0;
 }
 
 
@@ -2513,14 +2513,14 @@ void remove_event_handlers(const char* event_name)
 
 
 bool particleConnect(){
-	if(deviceConfig->server_address_type == 1){
-		return pClient.connect(deviceConfig->server_address_domain,SPARK_SERVER_PORT);
+  if(deviceConfig->server_address_type == 1){
+    return pClient.connect(deviceConfig->server_address_domain,SPARK_SERVER_PORT);
     //return pClient.connect("staging-device.spark.io",SPARK_SERVER_PORT);
-		//return pClient.connect(IPAddress(192,168,0,111),SPARK_SERVER_PORT);
-	}
-	else{
-		return pClient.connect(IPAddress(deviceConfig->server_address_ip),SPARK_SERVER_PORT);	
-	}
+    //return pClient.connect(IPAddress(192,168,0,111),SPARK_SERVER_PORT);
+  }
+  else{
+    return pClient.connect(IPAddress(deviceConfig->server_address_ip),SPARK_SERVER_PORT); 
+  }
 }
 
 
@@ -2541,7 +2541,7 @@ bool wifiConnect(){
     WiFi.begin(deviceConfig->ssid);
   }
   else{
-  	return false;
+    return false;
   }
   return true;
 }
@@ -2571,18 +2571,18 @@ bool wifiWaitForConnection(){ //returns false if it times out - I will later add
 
 
 bool readDeviceConfig(bool isSystem){
-	noInterrupts();
-	spi_flash_read(DEVICE_CONFIG_SECTOR * SECTOR_SIZE, reinterpret_cast<uint32_t*>(config_buffer), DEVICE_CONFIG_SIZE);
+  noInterrupts();
+  spi_flash_read(DEVICE_CONFIG_SECTOR * SECTOR_SIZE, reinterpret_cast<uint32_t*>(config_buffer), DEVICE_CONFIG_SIZE);
 
-	if(deviceConfig->magic != DEVICE_MAGIC || deviceConfig->chksum != calc_device_chksum((uint8*)deviceConfig, (uint8*)&deviceConfig->chksum)){
-	//load the backup and copy to main
-	spi_flash_read(DEVICE_BACKUP_CONFIG_SECTOR * SECTOR_SIZE, reinterpret_cast<uint32_t*>(config_buffer), DEVICE_CONFIG_SIZE);
-	spi_flash_erase_sector(DEVICE_CONFIG_SECTOR);
-	spi_flash_write(DEVICE_CONFIG_SECTOR * SECTOR_SIZE, reinterpret_cast<uint32_t*>(config_buffer), DEVICE_CONFIG_SIZE);
-	}
-	interrupts();
+  if(deviceConfig->magic != DEVICE_MAGIC || deviceConfig->chksum != calc_device_chksum((uint8*)deviceConfig, (uint8*)&deviceConfig->chksum)){
+  //load the backup and copy to main
+  spi_flash_read(DEVICE_BACKUP_CONFIG_SECTOR * SECTOR_SIZE, reinterpret_cast<uint32_t*>(config_buffer), DEVICE_CONFIG_SIZE);
+  spi_flash_erase_sector(DEVICE_CONFIG_SECTOR);
+  spi_flash_write(DEVICE_CONFIG_SECTOR * SECTOR_SIZE, reinterpret_cast<uint32_t*>(config_buffer), DEVICE_CONFIG_SIZE);
+  }
+  interrupts();
 
-	if(deviceConfig->magic != DEVICE_MAGIC || deviceConfig->chksum != calc_device_chksum((uint8*)deviceConfig, (uint8*)&deviceConfig->chksum)){
+  if(deviceConfig->magic != DEVICE_MAGIC || deviceConfig->chksum != calc_device_chksum((uint8*)deviceConfig, (uint8*)&deviceConfig->chksum)){
       if(isSystem){
         ets_memset(deviceConfig, 0x00, sizeof(oak_config));
         deviceConfig->magic = DEVICE_MAGIC;
@@ -2591,11 +2591,11 @@ bool readDeviceConfig(bool isSystem){
       }
       else{
        reboot_to_config();
-	     return false;
+       return false;
      }
-	}
+  }
 
-	return true;
+  return true;
 }
 
 
@@ -2645,10 +2645,10 @@ bool particle_handshake(){
   INFO("END HANDSHAKE");
 #endif
   #ifdef DEBUG_SETUP
-	INFO("SEND EVENTS");
+  INFO("SEND EVENTS");
 #endif
   if(deviceConfig->claim_code[0] != '\0')
-    spark_send_event("spark/device/claim/code", buf, 60, PRIVATE, NULL);
+    spark_send_event("spark/device/claim/code", deviceConfig->claim_code, 60, PRIVATE, NULL);
 
   //send max size of rom
   ultoa(FLASH_MAX_SIZE, buf, 10);
@@ -2672,17 +2672,17 @@ bool particle_handshake(){
   #endif
 */
   #ifdef DEBUG_SETUP
-	INFO("SEND SUBS");
+  INFO("SEND SUBS");
 #endif
 
   send_subscriptions();
   // important this comes at the end since it requires a response from the cloud.
   #ifdef DEBUG_SETUP
-	INFO("SEND TIME REQ");
+  INFO("SEND TIME REQ");
 #endif
   send_time_request();
   #ifdef DEBUG_SETUP
-	INFO("LOOP");
+  INFO("LOOP");
 #endif
   if(!event_loop()){
     #ifdef DEBUG_SETUP
@@ -2797,7 +2797,7 @@ void oak_rom_init(){
 
       sprintf(deviceConfig->version_string, "%d.%d.%d", OAK_SYSTEM_VERSION_MAJOR, OAK_SYSTEM_VERSION_MINOR, OAK_SYSTEM_VERSION_RELEASE);
       #ifdef DEBUG_SETUP
-      	Serial.println(deviceConfig->version_string);
+        Serial.println(deviceConfig->version_string);
       #endif
       //memcpy(deviceConfig->version_string,OAK_SYSTEM_VERSION_STRING,sizeof(OAK_SYSTEM_VERSION_STRING));
       if(bootConfig->config_rom != bootConfig->current_rom){ 
@@ -2829,7 +2829,7 @@ void spark_initConfig(bool isSystem){
     return;
   spark_initialized = true;
   #ifdef DEBUG_SETUP
-	Serial.println("INIT CONFIG");
+  Serial.println("INIT CONFIG");
 
 #endif
   readDeviceConfig(isSystem); //will not return if valid device config does not exist, will reboot to config ROM, unless isSytem in which case it will create a new one
@@ -2847,7 +2847,7 @@ bool spark_internal_connect(){
   if(!wifiConnected()){
     if(!wifiConnect()){
       #ifdef DEBUG_SETUP
-	Serial.println("WIFI");
+  Serial.println("WIFI");
 
 #endif
       spark_connect_pending = false;
@@ -2855,7 +2855,7 @@ bool spark_internal_connect(){
     }
     if(!wifiWaitForConnection()){
       #ifdef DEBUG_SETUP
-	Serial.println("WAIT");
+  Serial.println("WAIT");
 
 #endif
       spark_connect_pending = false;
@@ -2865,7 +2865,7 @@ bool spark_internal_connect(){
   if(!pClient.connected()){
     if(!particleConnect()){
       #ifdef DEBUG_SETUP
-	Serial.println("Particle");
+  Serial.println("Particle");
 
 #endif
       spark_connect_pending = false;
@@ -2877,7 +2877,7 @@ bool spark_internal_connect(){
     }
     if(!particle_handshake()){
       #ifdef DEBUG_SETUP
-	Serial.println("SHAKE");
+  Serial.println("SHAKE");
 
 #endif
       spark_connect_pending = false;
@@ -3445,7 +3445,7 @@ String set_config_from_JSON(String json){
     valueEnd = json.indexOf('"',valueStart+6);
     valueString = json.substring(valueStart+6,valueEnd);
     valueString.trim();
-    if(valueString.length()!=64){
+    if(valueString.length()<63){
       return String("{\"r\":-1}");
     }
     gotSomething = true;
