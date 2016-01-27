@@ -78,7 +78,7 @@ typedef struct {
   uint8 rom_on_gpio; //turn failure led off
   uint8 rom_on_invalid; //turn failure led off
   uint8 rom_on_reinit; //turn failure led off
-  uint8 padding; //turn failure led off
+  uint8 ota_reboot; //turn failure led off
   uint8 chksum; //checksum for sector
 } oakboot_config; 
 

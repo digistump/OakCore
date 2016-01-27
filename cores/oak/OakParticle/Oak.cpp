@@ -10,6 +10,9 @@ bool OakClass::connected(void) {
 bool OakClass::connect(void) { 
 	return wifiConnect(); 
 }
+uint8_t OakClass::bootReason(void) { 
+	return read_factory_reason(); 
+}
 bool OakClass::waitForConnection(void) { 
 	return wifiWaitForConnection(); 
 }
@@ -64,5 +67,7 @@ uint8_t OakClass::userRom(void){
 uint8_t OakClass::updateRom(void){
 	return update_rom();
 }
-
+uint8_t OakClass::otaReboot(void){
+	return ota_reboot();
+}
 OakClass Oak;

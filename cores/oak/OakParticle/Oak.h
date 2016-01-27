@@ -14,6 +14,7 @@ public:
 	bool connect(void);
 	bool connected(void);
 	bool waitForConnection(void);
+	uint8_t bootReason(void);
 	void rebootToUser(void);
 	void rebootToConfig(void);
 	void rebootToFallbackUpdater(void);
@@ -22,6 +23,7 @@ public:
 	uint8_t configRom(void);
 	uint8_t userRom(void);
 	uint8_t updateRom(void);
+	uint8_t otaReboot(void);
 	String infoResponse(void);
 	String configureApFromJSON(String json);
 	String setConfigFromJSON(String json);

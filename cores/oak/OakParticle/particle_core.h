@@ -263,6 +263,7 @@ uint8_t current_rom(void);
 uint8_t config_rom(void);
 uint8_t user_rom(void);
 uint8_t update_rom(void);
+uint8_t ota_reboot(void);
 }; // particle_core
 
 

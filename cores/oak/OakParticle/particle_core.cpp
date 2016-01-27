@@ -1773,7 +1773,9 @@ int finish_firmware_update(FileTransfer::Descriptor& file, uint32_t flags, void*
   Serial.println("DONE - RESTART");
 
 #endif
+          //set program rom equal to config rom, so that we return to failsafe on failure
           bootConfig->current_rom = getOTAFlashSlot();
+          bootConfig->ota_reboot = 1;
           writeBootConfig();
           spark_disconnect();
           delay(100);
@@ -1811,6 +1813,9 @@ uint8_t user_rom(void){
 }
 uint8_t update_rom(void){
   return bootConfig->update_rom;
+}
+uint8_t ota_reboot(void){
+  return bootConfig->ota_reboot;
 }
 
 void save_firmware_chunk(FileTransfer::Descriptor& file, uint8_t* chunk, void* reserved)
@@ -2780,9 +2785,13 @@ void SystemEvents(const char* name, const char* data)
 }
 
 
-
+bool oak_rom_inited = false;
 
 void oak_rom_init(){
+  if(oak_rom_inited)
+    return;
+
+  oak_rom_inited = true;
   #ifndef OAK_SYSTEM_ROM_4F616B
     #pragma message "SYSTEM DEFINE NOT SET, DEFAULTING TO USER ROM"
     #define OAK_SYSTEM_ROM_4F616B 0
@@ -2801,6 +2810,7 @@ void oak_rom_init(){
       #endif
       //memcpy(deviceConfig->version_string,OAK_SYSTEM_VERSION_STRING,sizeof(OAK_SYSTEM_VERSION_STRING));
       if(bootConfig->config_rom != bootConfig->current_rom){ 
+        bootConfig->ota_reboot = 0;
         bootConfig->config_rom = bootConfig->current_rom;
         bootConfig->update_rom = bootConfig->current_rom+2;
         writeBootConfig();
@@ -2813,14 +2823,18 @@ void oak_rom_init(){
       reboot_to_user();
     }
     else if(OAK_SYSTEM_ROM_4F616B != 82){
+
+      //dont do this until we reach the end of setup? the end of loop?
       //this is a new user rom, we have booted so set user rom to this
       if(bootConfig->program_rom != bootConfig->current_rom){ //if not already set
+        bootConfig->ota_reboot = 0;
         bootConfig->program_rom = bootConfig->current_rom;
         writeBootConfig();
       }
       init_bootloader_flags();
     }
   #endif
+
 }
 
 //this should be called when the Particle library is inited 
@@ -2835,10 +2849,11 @@ void spark_initConfig(bool isSystem){
   readDeviceConfig(isSystem); //will not return if valid device config does not exist, will reboot to config ROM, unless isSytem in which case it will create a new one
   readBootConfig();
   hex_decode(device_id,12,deviceConfig->device_id);
-  oak_rom_init();
   spark_subscribe("spark", SystemEvents, NULL, ALL_DEVICES, NULL, NULL);
   spark_subscribe("oak", SystemEvents, NULL, MY_DEVICES, NULL, NULL);
 }
+
+uint8_t wifi_connect_failed = 0;
 
 bool spark_internal_connect(){
   if(!spark_initialized)
@@ -2846,6 +2861,9 @@ bool spark_internal_connect(){
   spark_connect_pending = true;
   if(!wifiConnected()){
     if(!wifiConnect()){
+
+      //the wifi info is just bad
+      reboot_to_config();
       #ifdef DEBUG_SETUP
   Serial.println("WIFI");
 
@@ -2859,8 +2877,12 @@ bool spark_internal_connect(){
 
 #endif
       spark_connect_pending = false;
+      wifi_connect_failed++;
+      if(wifi_connect_failed>5)
+        reboot_to_config();
       return false;
     }
+    wifi_connect_failed = 0;
   }
   if(!pClient.connected()){
     if(!particleConnect()){
@@ -2895,6 +2917,8 @@ bool spark_ok_to_connect = false;
 uint32_t spark_last_failed_connect = 0;
 
 bool spark_auto_connect(bool internal){
+  if(internal)
+    oak_rom_init();
   if(system_mode>1 && internal)
     return false;
 
@@ -3765,6 +3789,10 @@ void set_oakboot_defaults(uint8_t failure_rom){ //0 = update rom, 1 = config rom
   }
   if(failure_rom != bootConfig->rom_on_reinit){
     bootConfig->rom_on_reinit = failure_rom;
+    changed = true;
+  }
+  if(1 != bootConfig->mode){ //allow gpio boot to config
+    bootConfig->mode = 1;
     changed = true;
   }
   if(changed){
