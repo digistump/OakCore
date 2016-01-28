@@ -2701,22 +2701,29 @@ bool particle_handshake(){
 
 
 void reboot_to_user(){
-  if(bootConfig->current_rom != bootConfig->program_rom)
+  if(bootConfig->current_rom != bootConfig->program_rom){
     bootConfig->current_rom = bootConfig->program_rom;
+    writeBootConfig();
+  }
   ESP.restart();
   while(1);
 }
 
 void reboot_to_config(){
-  if(bootConfig->current_rom != bootConfig->config_rom)
+  if(bootConfig->current_rom != bootConfig->config_rom){
     bootConfig->current_rom = bootConfig->config_rom;
+    writeBootConfig();
+  }
   ESP.restart();
   while(1);
 }
 
 void reboot_to_fallback_updater(){
-  if(bootConfig->current_rom != bootConfig->update_rom)
+  if(bootConfig->current_rom != bootConfig->update_rom){
     bootConfig->current_rom = bootConfig->update_rom;
+    writeBootConfig();
+  }
+  
   ESP.restart();
   while(1);
 }
@@ -2814,13 +2821,15 @@ void oak_rom_init(){
         bootConfig->config_rom = bootConfig->current_rom;
         bootConfig->update_rom = bootConfig->current_rom+2;
         writeBootConfig();
+        //Serial.println("INIT");
       }
       deviceConfig->system_update_pending = 0;
       init_bootloader_flags();
       writeDeviceConfig();
       
       //go back to the user application
-      reboot_to_user();
+      if(bootConfig->program_rom != bootConfig->current_rom)
+        reboot_to_user();
     }
     else if(OAK_SYSTEM_ROM_4F616B != 82){
 
@@ -3791,8 +3800,8 @@ void set_oakboot_defaults(uint8_t failure_rom){ //0 = update rom, 1 = config rom
     bootConfig->rom_on_reinit = failure_rom;
     changed = true;
   }
-  if(1 != bootConfig->mode){ //allow gpio boot to config
-    bootConfig->mode = 1;
+  if(0 != bootConfig->mode){ //don't allow gpio16 boot
+    bootConfig->mode = 0;
     changed = true;
   }
   if(changed){
@@ -3813,9 +3822,10 @@ uint8_t read_factory_reason(){
   return bootConfig->factory_reason;
 }
 void clear_factory_reason(){
-  if(bootConfig->factory_reason != 'N')
-  bootConfig->factory_reason = 'N';
-  writeBootConfig();
+  if(bootConfig->factory_reason != 'N'){
+    bootConfig->factory_reason = 'N';
+    writeBootConfig();
+  }
 }
 
 }; // particle_core
