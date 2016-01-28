@@ -2518,14 +2518,23 @@ void remove_event_handlers(const char* event_name)
 
 
 bool particleConnect(){
+  uint8_t max_connect_tries = 3;
   if(deviceConfig->server_address_type == 1){
-    return pClient.connect(deviceConfig->server_address_domain,SPARK_SERVER_PORT);
+    while(!pClient.connect(deviceConfig->server_address_domain,SPARK_SERVER_PORT) && max_connect_tries > 0){
+      max_connect_tries--;
+    }
     //return pClient.connect("staging-device.spark.io",SPARK_SERVER_PORT);
     //return pClient.connect(IPAddress(192,168,0,111),SPARK_SERVER_PORT);
   }
   else{
-    return pClient.connect(IPAddress(deviceConfig->server_address_ip),SPARK_SERVER_PORT); 
+    while(!pClient.connect(IPAddress(deviceConfig->server_address_ip),SPARK_SERVER_PORT) && max_connect_tries > 0){
+      max_connect_tries--;
+    }
   }
+  if(max_connect_tries>0)
+    return true;
+  else
+    return false;
 }
 
 
