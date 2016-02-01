@@ -27,6 +27,8 @@
 #ifndef Pins_Arduino_h
 #define Pins_Arduino_h
 
+/*Required for onewire library*/
+#define ARDUINO_ARCH_ESP8266 1 
 
 #define EXTERNAL_NUM_INTERRUPTS 10
 #define NUM_DIGITAL_PINS        11
