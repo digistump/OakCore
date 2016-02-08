@@ -1691,6 +1691,10 @@ bool handle_update_begin(msg& message)
               Serial.println("F2");
             #endif
             update_ready(msg_to_send + 2, message.token, (flags & 0x1));
+
+            spark_send_event("oak/device/stderr","OTA Update Started", 60, PRIVATE, NULL); 
+            delay(100);
+            
             if (0 > blocking_send(msg_to_send, 18))
             {
               // error
@@ -1718,14 +1722,19 @@ bool handle_update_begin(msg& message)
               }
 
             }
-            spark_send_event("oak/device/stderr","OTA Update Started", 60, PRIVATE, NULL); 
+            
         }
     }
 
     //PUMP ONLY CLOUD WHIE UPDATING
     uint32_t update_timeout = millis()+360000;//todo need to find a max for this?
+    uint32_t last_blink = millis();
     while(updating>0 && millis()<update_timeout){
       spark_process(false);
+      if(millis() - last_blink >= 100){
+        last_blink = millis();
+        LED_Toggle();
+      }
     }
     //should never get here
     ESP.restart();
@@ -1844,7 +1853,7 @@ void save_firmware_chunk(FileTransfer::Descriptor& file, uint8_t* chunk, void* r
               Serial.println("S2");
             #endif
 
-    LED_Toggle();
+    
 
     return;
 }
@@ -3826,6 +3835,16 @@ void set_bootloader_reason_write_skip(void){
 void init_bootloader_flags(void){
   set_bootloader_reason_write_skip();
   set_oakboot_defaults(1);
+}
+void check_safe_mode(void){
+  if(digitalRead(10) == HIGH){
+      uint32_t startHold = millis();
+      while(millis() - startHold < 100){
+          if(digitalRead(10) == LOW)
+              return;
+      }
+      reboot_to_config();
+  } 
 }
 uint8_t read_factory_reason(){
   return bootConfig->factory_reason;

@@ -106,7 +106,7 @@ static void loop_wrapper() {
     }
     preloop_update_frequency();
     loop();
-    ParticleProcess();
+    Particle.process();
     esp_schedule();
 }
 

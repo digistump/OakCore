@@ -137,14 +137,7 @@ void CloudClass::disconnect(void) { spark_disconnect(); }
 void CloudClass::process(void) { spark_process(false); }
 void delay(unsigned long ms) { spark_delay(ms); }
 void checkSafeMode(void) { 
-    if(digitalRead(10) == HIGH){
-        uint32_t startHold = millis();
-        while(millis() - startHold < 100){
-            if(digitalRead(10) == LOW)
-                return;
-        }
-        reboot_to_config();
-    } 
+    check_safe_mode();
 }
 String CloudClass::deviceID(void) { return spark_deviceID(); }
 
