@@ -143,6 +143,8 @@ extern "C" void user_init(void) {
 
     init();
 
+    checkSafeMode();
+
     initVariant();
 
     cont_init(&g_cont);

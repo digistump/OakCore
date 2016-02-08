@@ -503,7 +503,7 @@ void HardwareSerial::begin(unsigned long baud, byte config, byte mode) {
             _tx_buffer = new cbuf(SERIAL_TX_BUFFER_SIZE);
     }
     _written = false;
-    delay(1);
+    internal_delay(1);
 }
 
 void HardwareSerial::end() {

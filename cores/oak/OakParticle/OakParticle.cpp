@@ -4,12 +4,6 @@
 
 using namespace particle_core;
 
-extern "C"{
-    void ParticleProcess(void){
-        spark_process(true);
-    }
-}
-
 CloudClass::CloudClass(){
     spark_initConfig(false);
 }
@@ -141,7 +135,17 @@ bool CloudClass::disconnected(void) { return !connected(); }
 bool CloudClass::connect(bool internal) { return spark_auto_connect(internal); }
 void CloudClass::disconnect(void) { spark_disconnect(); }
 void CloudClass::process(void) { spark_process(false); }
-void CloudClass::delay(uint32_t ms) { spark_delay(ms); }
+void delay(unsigned long ms) { spark_delay(ms); }
+void checkSafeMode(void) { 
+    if(digitalRead(10) == HIGH){
+        uint32_t startHold = millis();
+        while(millis() - startHold < 100){
+            if(digitalRead(10) == LOW)
+                return;
+        }
+        reboot_to_config();
+    } 
+}
 String CloudClass::deviceID(void) { return spark_deviceID(); }
 
 //private:

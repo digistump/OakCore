@@ -205,7 +205,7 @@ uint8_t ESP8266WiFiClass::waitForConnectResult(){
   if ((wifi_get_opmode() & 1) == 0)//1 and 3 have STA enabled
       return WL_DISCONNECTED;
   while (status() == WL_DISCONNECTED)
-    delay(100);
+    internal_delay(100);
   return status();
 }
 

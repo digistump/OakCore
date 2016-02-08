@@ -151,7 +151,7 @@ public:
     static bool connect(bool internal = false);
     static void disconnect(void);
     static void process(void);
-    static void delay(uint32_t ms);
+    
     static String deviceID(void);
 
 
@@ -174,8 +174,8 @@ private:
 
 
 extern CloudClass Particle;
-extern "C"{
 
-void ParticleProcess(void);
-}
+void delay(unsigned long ms);
+void checkSafeMode(void);
+
 #endif // OakParticle_h

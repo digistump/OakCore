@@ -27,6 +27,13 @@
 #ifndef Pins_Arduino_h
 #define Pins_Arduino_h
 
+//for compat with libraries
+#ifndef ARDUINO_ARCH_ESP8266
+#define ARDUINO_ARCH_ESP8266 1
+#endif
+#ifndef ESP8266
+#define ESP8266 1
+#endif
 
 #define EXTERNAL_NUM_INTERRUPTS 10
 #define NUM_DIGITAL_PINS        11

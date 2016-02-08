@@ -219,7 +219,7 @@ class ClientContext {
             DEBUGV(":wr\r\n");
             tcp_output( _pcb );
             _send_waiting = true;
-            delay(5000); // max send timeout
+            internal_delay(5000); // max send timeout
             _send_waiting = false;
             DEBUGV(":ww\r\n");
             return will_send - _size_sent;

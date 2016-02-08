@@ -1778,7 +1778,7 @@ int finish_firmware_update(FileTransfer::Descriptor& file, uint32_t flags, void*
           bootConfig->ota_reboot = 1;
           writeBootConfig();
           spark_disconnect();
-          delay(100);
+          internal_delay(100);
           ESP.restart();
           while(1);
         }
@@ -1788,7 +1788,7 @@ int finish_firmware_update(FileTransfer::Descriptor& file, uint32_t flags, void*
     spark_send_event("oak/device/stderr","OTA Update Failed", 60, PRIVATE, NULL); 
     delay(500);
     spark_disconnect();
-    delay(100);
+    internal_delay(100);
     ESP.restart();
     
     return 0;
