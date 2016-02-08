@@ -3004,9 +3004,9 @@ void spark_process(bool internal)
     else if(system_mode == 3)
       return;
     if(spark_connect_pending){
-        #ifdef DEBUG_SETUP
-              ERROR("ALREADY PENDING");
-            #endif
+       // #ifdef DEBUG_SETUP
+             // ERROR("ALREADY PENDING");
+          //  #endif
       return;
     }
     if(spark_connected()){

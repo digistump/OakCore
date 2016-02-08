@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <Adafruit_ILI9341.h>
-
-// For the Adafruit shield, these are the default.
-#define TFT_DC 4
-#define TFT_CS 5
+//NOTE: This has been modified for use with the Digistump Oak
+// For the Oak shield these are the default.
+#define TFT_DC 1
+#define TFT_CS 6
 
 // Use hardware SPI (on Uno, #13, #12, #11) and the above for CS/DC
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
