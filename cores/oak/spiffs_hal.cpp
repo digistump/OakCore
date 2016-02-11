@@ -20,6 +20,8 @@
 
 #include <Arduino.h>
 #include <stdlib.h>
+#undef min
+#undef max
 #include <algorithm>
 #include "spiffs/spiffs.h"
 #include "debug.h"

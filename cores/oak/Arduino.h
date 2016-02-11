@@ -252,8 +252,16 @@ void delay(unsigned long);
 #include "Updater.h"
 #include "debug.h"
 
+#include "OakParticle/particle_globals.h"
+#include "OakParticle/Oak.h"
+#include "OakParticle/OakParticle.h"
+
+#ifndef _GLIBCXX_VECTOR
+// arduino is not compatible with std::vector
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
+#endif
+
 #define _min(a,b) ((a)<(b)?(a):(b))
 #define _max(a,b) ((a)>(b)?(a):(b))
 
@@ -274,11 +282,6 @@ long random(long, long);
 void randomSeed(unsigned long);
 long map(long, long, long, long, long);
 
-#undef min
-#undef max
-#include "OakParticle/particle_globals.h"
-#include "OakParticle/Oak.h"
-#include "OakParticle/OakParticle.h"
 
 extern "C" void configTime(long timezone, int daylightOffset_sec,
     const char* server1, const char* server2 = nullptr, const char* server3 = nullptr);
