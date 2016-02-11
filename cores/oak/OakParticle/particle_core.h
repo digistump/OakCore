@@ -249,7 +249,7 @@ void spark_serial_flush();
 int spark_serial_peek();
 void spark_get_rx(const char* name, const char* data);
 void spark_send_tx();
-void spark_process(bool internal = false);
+void spark_process(bool internal = false,bool allow_connect = true);
 
 String info_response(void);
 String set_config_from_JSON(String json);

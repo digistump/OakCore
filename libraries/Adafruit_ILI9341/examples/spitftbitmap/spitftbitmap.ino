@@ -25,13 +25,14 @@
 // Duemilanove, etc., pin 11 = MOSI, pin 12 = MISO, pin 13 = SCK.
 
 #define TFT_DC 1
-#define TFT_CS 6
+#define TFT_CS 5
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+#define min(a,b) ((a)<(b)?(a):(b))
 
 #define SD_CS 4
 
 void setup(void) {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   tft.begin();
   tft.fillScreen(ILI9341_BLUE);

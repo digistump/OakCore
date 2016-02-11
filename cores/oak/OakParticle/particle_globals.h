@@ -5,6 +5,8 @@
 
 //#define OAK_SYSTEM_ROM_4F616B 82
 
+#define SAFE_MODE_PIN 1
+
 #define PRODUCT_ID 82
 #define PLATFORM_ID 82
 #define OAK_SYSTEM_VERSION_INTEGER 2

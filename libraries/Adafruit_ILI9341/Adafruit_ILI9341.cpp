@@ -70,8 +70,8 @@ Adafruit_ILI9341::Adafruit_ILI9341(int8_t dc, int8_t rst) : Adafruit_GFX(ILI9341
     _dc   = dc;
     _rst  = rst;
   #ifdef ESP8266
-    _csMask = digitalPinToBitMask(_cs);
-    _dcMask = digitalPinToBitMask(_dc);
+    _csMask = digitalPinToBitMask(esp8266_pinToGpio[_cs]);
+    _dcMask = digitalPinToBitMask(esp8266_pinToGpio[_dc]);
     _rstMask = digitalPinToBitMask(_rst);
   #else
     hwSPI = true;

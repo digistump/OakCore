@@ -1748,8 +1748,10 @@ void spark_disconnect(){
 
 void spark_delay(uint32_t ms){
   uint32_t start = millis();
+  if(ms>6000)
+    spark_process(false,true);
   while((millis()-start)<ms){
-    spark_process(false);
+    spark_process(false,false);
   }
 }
 
@@ -2997,7 +2999,7 @@ bool spark_connect(){
   return false;
 }
 
-void spark_process(bool internal)
+void spark_process(bool internal, bool allow_connect)
 {
     if(!internal)
       yield();
@@ -3022,11 +3024,13 @@ void spark_process(bool internal)
         }
     }
     else{
-      #ifdef DEBUG_SETUP
+      
+      if((system_mode < 2 || spark_ok_to_connect) && allow_connect){
+        #ifdef DEBUG_SETUP
               ERROR("NO CONNECT");
             #endif
-      if(system_mode < 2 || spark_ok_to_connect)
         spark_connect();
+      }
       else
         return;
     }
@@ -3837,14 +3841,16 @@ void init_bootloader_flags(void){
   set_oakboot_defaults(1);
 }
 void check_safe_mode(void){
-  if(digitalRead(10) == HIGH){
+  #ifndef OAK_SYSTEM_ROM_4F616B
+  if(digitalRead(SAFE_MODE_PIN) == HIGH){
       uint32_t startHold = millis();
       while(millis() - startHold < 100){
-          if(digitalRead(10) == LOW)
+          if(digitalRead(SAFE_MODE_PIN) == LOW)
               return;
       }
       reboot_to_config();
   } 
+  #endif
 }
 uint8_t read_factory_reason(){
   return bootConfig->factory_reason;
