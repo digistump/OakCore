@@ -46,7 +46,19 @@ public:
 
     void persistent(bool persistent);
 
-    void mode(WiFiMode);
+    void mode(WiFiMode)
+        __attribute__((error("You cannot change the WiFi mode of the Oak, use WiFi.enableAP() and WiFi.disableAP() to enable to disable the Oak acting as an access point.")));
+    
+    void mode_internal(WiFiMode);
+
+    void enableAP(){
+        mode_internal(WIFI_AP_STA);
+    }
+
+    void disableAP(){
+        mode_internal(WIFI_STA);
+    }
+
     WiFiMode getMode();
 
     /**
@@ -58,8 +70,16 @@ public:
      * @param channel                   Optional. Channel of AP
      * @return
      */
-    int begin(const char* ssid, const char *passphrase = NULL, int32_t channel = 0, const uint8_t* bssid = NULL);
-    int begin(char* ssid, char *passphrase = NULL, int32_t channel = 0, const uint8_t* bssid = NULL);
+    int begin(const char* ssid, const char *passphrase = NULL, int32_t channel = 0, const uint8_t* bssid = NULL)
+        __attribute__((error("You must use the WiFi config mode to change the Oaks network info.")));
+
+    int begin_internal(const char* ssid, const char *passphrase = NULL, int32_t channel = 0, const uint8_t* bssid = NULL);
+
+    int begin(char* ssid, char *passphrase = NULL, int32_t channel = 0, const uint8_t* bssid = NULL)
+        __attribute__((error("You must use the WiFi config mode to change the Oaks network info.")));
+    
+
+    int begin_internal(char* ssid, char *passphrase = NULL, int32_t channel = 0, const uint8_t* bssid = NULL);
 
     // Use sdk config to connect.
     int begin();

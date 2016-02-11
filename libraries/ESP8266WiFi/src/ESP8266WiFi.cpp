@@ -59,7 +59,7 @@ void ESP8266WiFiClass::persistent(bool persistent)
 }
 
 
-void ESP8266WiFiClass::mode(WiFiMode m)
+void ESP8266WiFiClass::mode_internal(WiFiMode m)
 {
     if(wifi_get_opmode() == (uint8)m) {
         return;
@@ -123,12 +123,12 @@ static bool sta_config_equal(const station_config& lhs, const station_config& rh
     return true;
 }
 
-int ESP8266WiFiClass::begin(char* ssid, char *passphrase, int32_t channel, const uint8_t* bssid)
+int ESP8266WiFiClass::begin_internal(char* ssid, char *passphrase, int32_t channel, const uint8_t* bssid)
 {
-    return begin((const char*) ssid, (const char*) passphrase, channel, bssid);
+    return begin_internal((const char*) ssid, (const char*) passphrase, channel, bssid);
 }
 
-int ESP8266WiFiClass::begin(const char* ssid, const char *passphrase, int32_t channel, const uint8_t* bssid)
+int ESP8266WiFiClass::begin_internal(const char* ssid, const char *passphrase, int32_t channel, const uint8_t* bssid)
 {
     _useClientMode = true;
 

@@ -2552,18 +2552,18 @@ bool particleConnect(){
 //this connects to the configured wifi
 bool wifiConnect(){
   WiFi.softAPdisconnect(false);
-  WiFi.mode(WIFI_STA);
+  WiFi.mode_internal(WIFI_STA);
   if(deviceConfig->passcode[0] != '\0' && deviceConfig->channel > 0){
-    WiFi.begin(deviceConfig->ssid,deviceConfig->passcode, deviceConfig->channel);
+    WiFi.begin_internal(deviceConfig->ssid,deviceConfig->passcode, deviceConfig->channel);
   }
   else if(deviceConfig->passcode[0] != '\0'){
-    WiFi.begin(deviceConfig->ssid,deviceConfig->passcode);
+    WiFi.begin_internal(deviceConfig->ssid,deviceConfig->passcode);
   }
   else if(deviceConfig->channel > 0){
-    WiFi.begin(deviceConfig->ssid, NULL, deviceConfig->channel);
+    WiFi.begin_internal(deviceConfig->ssid, NULL, deviceConfig->channel);
   }
   else if (deviceConfig->ssid[0] != '\0'){
-    WiFi.begin(deviceConfig->ssid);
+    WiFi.begin_internal(deviceConfig->ssid);
   }
   else{
     return false;

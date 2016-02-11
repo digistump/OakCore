@@ -59,7 +59,7 @@ void ESP8266WiFiClass::persistent(bool persistent)
 }
 
 
-void ESP8266WiFiClass::mode(WiFiMode m)
+void ESP8266WiFiClass::mode_internal(WiFiMode m)
 {
     if(wifi_get_opmode() == (uint8)m) {
         return;
@@ -123,12 +123,12 @@ static bool sta_config_equal(const station_config& lhs, const station_config& rh
     return true;
 }
 
-int ESP8266WiFiClass::begin(char* ssid, char *passphrase, int32_t channel, const uint8_t* bssid)
+int ESP8266WiFiClass::begin_internal(char* ssid, char *passphrase, int32_t channel, const uint8_t* bssid)
 {
-    return begin((const char*) ssid, (const char*) passphrase, channel, bssid);
+    return begin_internal((const char*) ssid, (const char*) passphrase, channel, bssid);
 }
 
-int ESP8266WiFiClass::begin(const char* ssid, const char *passphrase, int32_t channel, const uint8_t* bssid)
+int ESP8266WiFiClass::begin_internal(const char* ssid, const char *passphrase, int32_t channel, const uint8_t* bssid)
 {
     _useClientMode = true;
 
@@ -205,7 +205,7 @@ uint8_t ESP8266WiFiClass::waitForConnectResult(){
   if ((wifi_get_opmode() & 1) == 0)//1 and 3 have STA enabled
       return WL_DISCONNECTED;
   while (status() == WL_DISCONNECTED)
-    internal_delay(100);
+    delay(100);
   return status();
 }
 
@@ -595,7 +595,7 @@ int8_t ESP8266WiFiClass::scanNetworks(bool async)
         ESP8266WiFiClass::_scanStarted = true;
 
         if(ESP8266WiFiClass::_scanAsync) {
-            internal_delay(0); // time for the OS to trigger the scan
+            delay(0); // time for the OS to trigger the scan
             return WIFI_SCAN_RUNNING;
         }
 
