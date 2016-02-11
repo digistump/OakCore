@@ -25,6 +25,7 @@
 
 #include <cstring>
 #include "particle.h"
+#include "particle_core.h"
 #include "Stream.h"
 
 #ifdef SPARK_NO_CLOUD
@@ -42,6 +43,11 @@ public:
     String pubKey(void);
     bool provisionKeys(bool force = false);
 
+    static inline bool variable(const char* varKey, const bool& var)
+    {
+        return variable(varKey, &var, particle_core::BOOLEAN);
+    }
+
     static inline bool variable(const char* varKey, const int& var)
     {
         return variable(varKey, &var, particle_core::INT);
@@ -50,6 +56,11 @@ public:
     {
         return variable(varKey, &var, particle_core::INT);
     }
+
+#if PLATFORM_ID!=3
+    static bool variable(const char* varKey, const float& var)
+    __attribute__((error("Please change the variable from type `float` to `double` for use with Particle.variable().")));
+#endif
 
     static inline bool variable(const char* varKey, const double& var)
     {
@@ -83,10 +94,20 @@ public:
         return variable(varKey, (const char*)userVar, userVarType);
     }
 
-    template<typename T> static bool variable(const char *varKey, const typename T::varref userVar, const T& userVarType);
+    template<typename T> static inline bool variable(const char *varKey, const typename T::varref userVar, const T& userVarType)
+    {
+        return CLOUD_FN(spark_variable(varKey, (const void*)userVar, T::value(), NULL), false);
+    }
 
-    static bool variable(const char *varKey, const int32_t* userVar, const particle_core::CloudVariableTypeInt& userVarType);
-    static bool variable(const char *varKey, const uint32_t* userVar, const particle_core::CloudVariableTypeInt& userVarType);
+    static inline bool variable(const char *varKey, const int32_t* userVar, const particle_core::CloudVariableTypeInt& userVarType)
+    {
+        return CLOUD_FN(spark_variable(varKey, (const void*)userVar, particle_core::CloudVariableTypeInt::value(), NULL), false);
+    }
+
+    static inline bool variable(const char *varKey, const uint32_t* userVar, const particle_core::CloudVariableTypeInt& userVarType)
+    {
+        return CLOUD_FN(spark_variable(varKey, (const void*)userVar, particle_core::CloudVariableTypeInt::value(), NULL), false);
+    }
 
     // Return clear errors for common misuses of Particle.variable()
     template<typename T, std::size_t N>
@@ -129,7 +150,7 @@ public:
     void unsubscribe();
 
     bool syncTime(void);
-    
+
     void begin();
     size_t write(uint8_t);
     int available();
@@ -151,7 +172,7 @@ public:
     static bool connect(bool internal = false);
     static void disconnect(void);
     static void process(void);
-    
+
     static String deviceID(void);
 
 
