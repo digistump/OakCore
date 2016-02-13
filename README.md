@@ -54,8 +54,8 @@ ESP8266 docs here: http://esp8266.github.io/Arduino/versions/2.0.0/doc/libraries
 
 **Other useful info:**
 
-- Oak.rebootToConfig() will get you into WiFi Config setup mode.
-  - If you can't boot into that then pull Pin 10 to GND and it power cycle and you will boot to that.
+- Oak.rebootToConfig() will get you into WiFi Config setup mode, also referred to as safe mode.
+  - If you can't boot into that then pull Pin 0 to GND and power cycle and you will boot to that.
   - Next release will have an option to boot there automatically if there the WiFi can't connect.
   - It will also boot to a safe mode if there is a timeout (do to a while loop that doesn't call Particle.process()) or a exception (memory overflow, etc) - in that mode it will just wait for an update. If you power cycle it will go back to the user program.
 - DO NOT mess with the flash read/write/erase functions - erase the wrong sector and it will brick the unit.
