@@ -32,6 +32,9 @@ namespace particle_core {
 #define PROTOCOL_BUFFER_SIZE 800
 #define QUEUE_SIZE 800
 
+  uint8_t spark_failed_connects = 0;
+bool spark_ok_to_connect = false;
+
 //this has to be aligned 
 uint8_t chunk_buffer[512];
 
@@ -1742,8 +1745,11 @@ bool handle_update_begin(msg& message)
 }
 
 void spark_disconnect(){
-  if(pClient.connected())
+  if(pClient.connected()){
     pClient.stop();
+    set_system_mode(SEMI_AUTOMATIC);
+    spark_ok_to_connect = false;
+  }
 }
 
 void spark_delay(uint32_t ms){
@@ -2761,7 +2767,7 @@ void SystemEvents(const char* name, const char* data)
 {
     if (!strncmp(name, CLAIM_EVENTS, strlen(CLAIM_EVENTS))) {
         //mark as claimed
-        deviceConfig->claim_code[0] != '\0';
+        deviceConfig->claim_code[0] = '\0';
         deviceConfig->claimed = 1;
         writeDeviceConfig();
     }
@@ -2940,8 +2946,7 @@ bool spark_internal_connect(){
   return true;
 } 
 
-uint8_t spark_failed_connects = 0;
-bool spark_ok_to_connect = false;
+
 
 uint32_t spark_last_failed_connect = 0;
 
@@ -3842,14 +3847,16 @@ void init_bootloader_flags(void){
 }
 void check_safe_mode(void){
   #ifndef OAK_SYSTEM_ROM_4F616B
-  if(digitalRead(SAFE_MODE_PIN) == HIGH){
+  pinMode(SAFE_MODE_PIN,INPUT_PULLUP);
+  if(digitalRead(SAFE_MODE_PIN) == LOW){
       uint32_t startHold = millis();
       while(millis() - startHold < 100){
-          if(digitalRead(SAFE_MODE_PIN) == LOW)
+          if(digitalRead(SAFE_MODE_PIN) == HIGH)
               return;
       }
       reboot_to_config();
-  } 
+  }
+  pinMode(SAFE_MODE_PIN,INPUT); 
   #endif
 }
 uint8_t read_factory_reason(){

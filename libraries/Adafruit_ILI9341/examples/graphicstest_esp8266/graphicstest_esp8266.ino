@@ -7,7 +7,6 @@
 
 // Use hardware SPI (on Uno, #13, #12, #11) and the above for CS/DC
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
-#define min(a,b) ((a)<(b)?(a):(b))
 #define SERIAL_OUT Serial
 
 unsigned long testFillScreen() {

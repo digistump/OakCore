@@ -27,7 +27,6 @@
 #define TFT_DC 1
 #define TFT_CS 5
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
-#define min(a,b) ((a)<(b)?(a):(b))
 
 #define SD_CS 4
 
