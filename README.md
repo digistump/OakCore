@@ -1,16 +1,34 @@
-# OakCore - EARLY BETA RELEASE
+## You must update your Arduino Oak package to 0.9.3 via the boards manager! 
+**If you previously used an earlier Beta please do a factory reset here: http://github.com/digistump/OakRestore**
+
+**MAKE SURE YOU USE THE LATEST OakSoftAP - force a browser refresh before using**
 
 **HOW TO INSTALL AND USE THIS:** http://digistump.com/wiki/oak/tutorials/arduino
+**TROUBLESHOOTING:** http://digistump.com/wiki/oak/tutorials/troubleshooting
 
 **PLEASE FILE ISSUES FOR BUGS:** with as much detail as possible!
 
+**Issues Fixed with this release:**
+
+- Code examples and libraries for most shields
+- Various small fixes (see github issue tracker for most)
+- Change to a distinct blink pattern in config mode (3 blink bursts with 0.5 seconds between the bursts)
+- More responsive during WiFi config changes
+- Better connect/reconnect logic
+- Various safeties against changing the WiFi config in sketch
+- Particle.delay is no longer necessary - just use regular delay() - for very time sensitive things you can also use delay_internal()
+- Change to Pin 0 held LOW at boot to enter config as a failsafe
+- Servo library works - min/max defs fixed
+- All Particle.variable types work
+
+
 **Known Issues with this release:**
 
-- OTA Updates are very slow! 2-3 minutes on average. When an OTA update is taking place the LED will blink somewhat erratically - one toggle per packet arriving. 
-- You MUST use Particle.delay() in place of delay()
+- OTA Updates are very slow! 2-3 minutes on average. When an OTA update is taking place the LED will blink somewhat erratically - one toggle per packet arriving. (This is Temporary - FastOTA will be turned on in a near future release)
+- ~~You MUST use Particle.delay() in place of delay()~~ Now you must just use delay() like you do with normal Arduino sketched
 - Initial connection before the user application starts is still a bit slow, but not horrible.
 - Not tested exhaustively! May brick your unit, please don't try to break it, yet... unless you really want to.
-- If you brick your unit you'll need a 3.3v serial adapter to revive it. (And I need to write up a how to still!)
+- If you brick your unit you'll need a 3.3v serial adapter to revive it. (See https://github.com/digistump/OakRestore)
 - Serial over the cloud is not fully working yet - a serial adapter on pins 3(RX) and 4(TX) can be a big help until that gets sorted in the next release or if you are debugging anything major, for now.
 
 **Working Particle APIs:**
@@ -44,5 +62,3 @@ ESP8266 docs here: http://esp8266.github.io/Arduino/versions/2.0.0/doc/libraries
 - Future system updates will come automatically when you upload a new sketch.
 - Have fun! Much more to come! 
 
-
-Special thanks for this release to my wife and daughter (who haven't seen much of me the last few weeks), the Particle (@spark) team, especially Dave, Zachary, Stephanie, and Zach - @povrazor, @DarkLotus, @danielmawhirter, @fri-sch, @DeuxVis, @TrueJournals on github (and anyone else we missed), and - most of all - all of our backers on Kickstarter and via Pre-order
