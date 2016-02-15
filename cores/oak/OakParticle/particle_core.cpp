@@ -1923,17 +1923,18 @@ bool handle_chunk(msg& message)
     uint8_t* msg_to_send = message.response;
     //Move this down here to match Spark, also only send if not fast ota  
     if(!fast_ota){
-
-    // send ACK
-    *msg_to_send = 0;
-    *(msg_to_send + 1) = 16;
-    empty_ack(msg_to_send + 2, queue[2], queue[3]);
-    if (0 > blocking_send(msg_to_send, 18))
-    {
-        Serial.println("CE1");
-      return false;
+      // send ACK
+      *msg_to_send = 0;
+      *(msg_to_send + 1) = 16;
+      empty_ack(msg_to_send + 2, queue[2], queue[3]);
+      if (0 > blocking_send(msg_to_send, 18))
+      {
+        #ifdef DEBUG_SETUP
+          Serial.println("CE1");
+        #endif
+        return false;
+      }
     }
-   }
    
     if (0xFF==queue[payload])
     {
