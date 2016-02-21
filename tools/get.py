@@ -45,7 +45,11 @@ def unpack(filename, destination):
     if filename.endswith('tar.gz'):
         tfile = tarfile.open(filename, 'r:gz')
         tfile.extractall(destination)
-        dirname= tfile.getnames()[0]
+        dirname = tfile.getnames()[0]
+    elif filename.endswith('tar.bz2'):
+        tfile = tarfile.open(filename, 'r:bz2')
+        tfile.extractall(destination)
+        dirname = tfile.getnames()[0]
     elif filename.endswith('zip'):
         zfile = zipfile.ZipFile(filename)
         zfile.extractall(destination)
@@ -54,12 +58,15 @@ def unpack(filename, destination):
         raise NotImplementedError('Unsupported archive type')
 
     # a little trick to rename tool directories so they don't contain version number
-    rename_to = re.match(r'^([a-z][^\-]*\-*)+', dirname).group(0).encode('ascii').strip('-')
-    if rename_to != dirname:
-        print('Renaming {0} to {1}'.format(dirname, rename_to))
-        if os.path.isdir(rename_to):
-            shutil.rmtree(rename_to)
-        shutil.move(dirname, rename_to)
+    rename_candidate = re.match(r'^([a-z][^\-]*\-*)+', dirname)
+
+    if rename_candidate is not None:
+        rename_to = rename_candidate.group(0).encode('ascii').strip('-')
+        if rename_to != dirname:
+            print('Renaming {0} to {1}'.format(dirname, rename_to))
+            if os.path.isdir(rename_to):
+                shutil.rmtree(rename_to)
+            shutil.move(dirname, rename_to)
 
 def get_tool(tool):
     archive_name = tool['archiveFileName']
@@ -74,7 +81,7 @@ def get_tool(tool):
     else:
         print('Tool {0} already downloaded'.format(archive_name))
     local_hash = sha256sum(local_path)
-    if local_hash != real_hash:
+    if local_hash.lower() != real_hash.lower():
         print('Hash mismatch for {0}, delete the file and try again'.format(local_path))
         raise RuntimeError()
     unpack(local_path, '.')
@@ -103,7 +110,7 @@ def identify_platform():
 
 if __name__ == '__main__':
     print('Platform: {0}'.format(identify_platform()))
-    tools_to_download = load_tools_list('../package/package_oak_index.template.json', identify_platform())
+    tools_to_download = load_tools_list('../packages/package_digistump_index.json', identify_platform())
     mkdir_p(dist_dir)
     for tool in tools_to_download:
         get_tool(tool)
