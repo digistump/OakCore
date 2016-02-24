@@ -1889,9 +1889,9 @@ void notify_update_done(uint8_t* buf)
 
 bool handle_chunk(msg& message)
 {
-	#ifdef DEBUG_SETUP
-    	Serial.println("CHUNK");
-	#endif
+  #ifdef DEBUG_SETUP
+      Serial.println("CHUNK");
+  #endif
     last_chunk_millis = millis();
     //Faults without this.
     internal_delay(10);
@@ -3874,7 +3874,9 @@ void init_bootloader_flags(void){
   set_oakboot_defaults(1);
 }
 void check_safe_mode(void){
-  #ifndef OAK_SYSTEM_ROM_4F616B
+  #ifdef SAFE_MODE_PIN
+  if(OAK_SYSTEM_ROM_4F616B == 82)
+    return;
   pinMode(SAFE_MODE_PIN,INPUT_PULLUP);
   if(digitalRead(SAFE_MODE_PIN) == LOW){
       uint32_t startHold = millis();

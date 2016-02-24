@@ -8,7 +8,111 @@ menu.RomConfig=ROM Config
 #menu.ResetMethod=Reset Method
 
 ##############################################################
-oak.name=Oak by Digistump
+oak1.name=Oak by Digistump (Pin 1 Safe Mode)
+
+oak1.upload.tool=oak_ota
+oak1.upload.speed=115200
+oak1.upload.resetmethod=ck
+oak1.upload.maximum_size=1040368
+oak1.upload.maximum_data_size=81920
+oak1.upload.wait_for_upload_port=false
+oak1.serial.disableDTR=true
+oak1.serial.disableRTS=true
+
+oak1.build.mcu=esp8266
+oak1.build.f_cpu=80000000L
+oak1.build.board=ESP8266_OAK
+oak1.build.core=oak
+oak1.build.variant=oak1
+oak1.build.flash_mode=qio
+oak1.build.flash_freq=40
+oak1.build.spiffs_pagesize=256
+
+
+oak1.menu.CpuFrequency.80=80 MHz
+oak1.menu.CpuFrequency.80.build.f_cpu=80000000L
+oak1.menu.CpuFrequency.160=160 MHz
+oak1.menu.CpuFrequency.160.build.f_cpu=160000000L
+
+oak1.menu.UploadTool.oak_ota=Particle OTA
+oak1.menu.UploadTool.oak_ota.upload.tool=oak_ota
+oak1.menu.UploadTool.oak_ota.upload.verbose=-vv
+oak1.menu.UploadTool.esptool_py=Serial (Expert Use Only - Requires Python)
+oak1.menu.UploadTool.esptool_py.upload.tool=esptool_py
+oak1.menu.UploadTool.esptool_py.upload.verbose=-vv
+
+oak1.menu.FlashSize.OAK=OAK (4M/1M SPIFFS)
+#this is in megabits - only needed for serial upload
+oak1.menu.FlashSize.oak1.build.flash_size=32m
+oak1.menu.FlashSize.oak1.build.spiffs_start=0x300000
+oak1.menu.FlashSize.oak1.build.spiffs_end=0x3FB000
+oak1.menu.FlashSize.oak1.build.spiffs_blocksize=8192
+oak1.menu.FlashSize.oak1.build.spiffs_pagesize=256
+
+oak1.menu.RomConfig.Full=Single - 1MB (Fullsize)
+oak1.menu.RomConfig.Full.build.flash_ld=oak_full.ld
+oak1.menu.RomConfig.Full.upload.maximum_size=1040368
+oak1.menu.RomConfig.Full.upload.flash_address=0x0002000
+
+#oak1.menu.RomConfig.Half1=First Half - 512KB (Half)
+#oak1.menu.RomConfig.Half1.build.flash_ld=oak_half1.ld
+#oak1.menu.RomConfig.Half1.upload.maximum_size=520176
+#oak1.menu.RomConfig.Half1.upload.flash_address=0x0002000
+
+#oak1.menu.RomConfig.Half2=Second Half - 512KB (Half)
+#oak1.menu.RomConfig.Half2.build.flash_ld=oak_half2.ld
+#oak1.menu.RomConfig.Half2.upload.maximum_size=520176
+#oak1.menu.RomConfig.Half2.upload.flash_address=0x0081000
+
+oak6.name=Oak by Digistump (Pin 6 Safe Mode)
+
+oak6.upload.tool=oak_ota
+oak6.upload.speed=115200
+oak6.upload.resetmethod=ck
+oak6.upload.maximum_size=1040368
+oak6.upload.maximum_data_size=81920
+oak6.upload.wait_for_upload_port=false
+oak6.serial.disableDTR=true
+oak6.serial.disableRTS=true
+
+oak6.build.mcu=esp8266
+oak6.build.f_cpu=80000000L
+oak6.build.board=ESP8266_OAK
+oak6.build.core=oak
+oak6.build.variant=oak6
+oak6.build.flash_mode=qio
+oak6.build.flash_freq=40
+oak6.build.spiffs_pagesize=256
+
+
+oak6.menu.CpuFrequency.80=80 MHz
+oak6.menu.CpuFrequency.80.build.f_cpu=80000000L
+oak6.menu.CpuFrequency.160=160 MHz
+oak6.menu.CpuFrequency.160.build.f_cpu=160000000L
+
+oak6.menu.UploadTool.oak_ota=Particle OTA
+oak6.menu.UploadTool.oak_ota.upload.tool=oak_ota
+oak6.menu.UploadTool.oak_ota.upload.verbose=-vv
+oak6.menu.UploadTool.esptool_py=Serial (Expert Use Only - Requires Python)
+oak6.menu.UploadTool.esptool_py.upload.tool=esptool_py
+oak6.menu.UploadTool.esptool_py.upload.verbose=-vv
+
+oak6.menu.FlashSize.OAK=OAK (4M/1M SPIFFS)
+#this is in megabits - only needed for serial upload
+oak6.menu.FlashSize.oak6.build.flash_size=32m
+oak6.menu.FlashSize.oak6.build.spiffs_start=0x300000
+oak6.menu.FlashSize.oak6.build.spiffs_end=0x3FB000
+oak6.menu.FlashSize.oak6.build.spiffs_blocksize=8192
+oak6.menu.FlashSize.oak6.build.spiffs_pagesize=256
+
+oak6.menu.RomConfig.Full=Single - 1MB (Fullsize)
+oak6.menu.RomConfig.Full.build.flash_ld=oak_full.ld
+oak6.menu.RomConfig.Full.upload.maximum_size=1040368
+oak6.menu.RomConfig.Full.upload.flash_address=0x0002000
+
+
+
+oak.name=Oak by Digistump (No Safe Mode - ADVANCED)
 
 oak.upload.tool=oak_ota
 oak.upload.speed=115200
@@ -43,23 +147,13 @@ oak.menu.UploadTool.esptool_py.upload.verbose=-vv
 
 oak.menu.FlashSize.OAK=OAK (4M/1M SPIFFS)
 #this is in megabits - only needed for serial upload
-oak.menu.FlashSize.OAK.build.flash_size=32m
-oak.menu.FlashSize.OAK.build.spiffs_start=0x300000
-oak.menu.FlashSize.OAK.build.spiffs_end=0x3FB000
-oak.menu.FlashSize.OAK.build.spiffs_blocksize=8192
-oak.menu.FlashSize.OAK.build.spiffs_pagesize=256
+oak.menu.FlashSize.oak.build.flash_size=32m
+oak.menu.FlashSize.oak.build.spiffs_start=0x300000
+oak.menu.FlashSize.oak.build.spiffs_end=0x3FB000
+oak.menu.FlashSize.oak.build.spiffs_blocksize=8192
+oak.menu.FlashSize.oak.build.spiffs_pagesize=256
 
 oak.menu.RomConfig.Full=Single - 1MB (Fullsize)
 oak.menu.RomConfig.Full.build.flash_ld=oak_full.ld
 oak.menu.RomConfig.Full.upload.maximum_size=1040368
 oak.menu.RomConfig.Full.upload.flash_address=0x0002000
-
-#oak.menu.RomConfig.Half1=First Half - 512KB (Half)
-#oak.menu.RomConfig.Half1.build.flash_ld=oak_half1.ld
-#oak.menu.RomConfig.Half1.upload.maximum_size=520176
-#oak.menu.RomConfig.Half1.upload.flash_address=0x0002000
-
-#oak.menu.RomConfig.Half2=Second Half - 512KB (Half)
-#oak.menu.RomConfig.Half2.build.flash_ld=oak_half2.ld
-#oak.menu.RomConfig.Half2.upload.maximum_size=520176
-#oak.menu.RomConfig.Half2.upload.flash_address=0x0081000
