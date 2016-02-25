@@ -1,4 +1,7 @@
-## You must update your Arduino Oak package to 0.9.3 via the boards manager! 
+## You must update your Arduino Oak package to 0.9.4 via the boards manager! 
+
+**Due to bugs in the Arduino 1.6.6 and 1.6.7 IDEs we strongly suggest using 1.6.5r2 (for all boards not just ours)**
+
 **If you previously used an earlier Beta please do a factory reset here: http://github.com/digistump/OakRestore**
 
 **MAKE SURE YOU USE THE LATEST OakSoftAP - force a browser refresh before using**
@@ -10,22 +13,16 @@
 
 **Issues Fixed with this release:**
 
-- Code examples and libraries for most shields
+- Fast OTA Updates! (these are the updates from Particle, not the initial update during config)
+- Pin 6 or 1 selectable for safe mode entry (hold low on boot to enter config/safe mode)
 - Various small fixes (see github issue tracker for most)
-- Change to a distinct blink pattern in config mode (3 blink bursts with 0.5 seconds between the bursts)
-- More responsive during WiFi config changes
-- Better connect/reconnect logic
-- Various safeties against changing the WiFi config in sketch
-- Particle.delay is no longer necessary - just use regular delay() - for very time sensitive things you can also use delay_internal()
-- Change to Pin 0 held LOW at boot to enter config as a failsafe
-- Servo library works - min/max defs fixed
-- All Particle.variable types work
+- Better logic when in config mode - always connects to Particle when possible
+- Config App has improved device claiming, device will always be added to your account when it first connects after a successful update, even if you close out the config app.
 
 
 **Known Issues with this release:**
 
-- OTA Updates are very slow! 2-3 minutes on average. When an OTA update is taking place the LED will blink somewhat erratically - one toggle per packet arriving. (This is Temporary - FastOTA will be turned on in a near future release)
-- ~~You MUST use Particle.delay() in place of delay()~~ Now you must just use delay() like you do with normal Arduino sketched
+- Still having issues with the initial updating - power users can now do this over serial (see http://github.com/digistump/OakRestore) - still working hard to improve this.
 - Initial connection before the user application starts is still a bit slow, but not horrible.
 - Not tested exhaustively! May brick your unit, please don't try to break it, yet... unless you really want to.
 - If you brick your unit you'll need a 3.3v serial adapter to revive it. (See https://github.com/digistump/OakRestore)
@@ -61,4 +58,3 @@ ESP8266 docs here: http://esp8266.github.io/Arduino/versions/2.0.0/doc/libraries
 - DO NOT mess with the flash read/write/erase functions - erase the wrong sector and it will brick the unit.
 - Future system updates will come automatically when you upload a new sketch.
 - Have fun! Much more to come! 
-
