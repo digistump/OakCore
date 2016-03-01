@@ -100,6 +100,7 @@ extern "C" void optimistic_yield(uint32_t interval_us) {
 static void loop_wrapper() {
     static bool setup_done = false;
     if(!setup_done) {
+        checkSafeMode();
         Particle.connect(true);
         setup();
         setup_done = true;
@@ -143,7 +144,7 @@ extern "C" void user_init(void) {
 
     init();
 
-    checkSafeMode();
+    //checkSafeMode();
 
     initVariant();
 

@@ -3505,8 +3505,8 @@ String info_response(void){
   else
     response += "-1,";
 
-    response += ",\"firmware_version\":";
-  response += deviceConfig->firmware_version;
+    response += ",\"system_version\":";
+  response += deviceConfig->system_version;
     response += ",\"version_string\":\"";
   response += deviceConfig->version_string;
   response += "\",\"meta_id\":";
@@ -3880,7 +3880,7 @@ void check_safe_mode(void){
   pinMode(SAFE_MODE_PIN,INPUT_PULLUP);
   if(digitalRead(SAFE_MODE_PIN) == LOW){
       uint32_t startHold = millis();
-      while(millis() - startHold < 100){
+      while(millis() - startHold < 50){
           if(digitalRead(SAFE_MODE_PIN) == HIGH)
               return;
       }
