@@ -1,4 +1,4 @@
-## You must update your Arduino Oak package to 0.9.4 via the boards manager! 
+## You must update your Arduino Oak package to 0.9.5 via the boards manager! 
 
 **Due to bugs in the Arduino 1.6.6 and 1.6.7 IDEs we strongly suggest using 1.6.5r2 (for all boards not just ours)**
 
@@ -13,15 +13,17 @@
 
 **Issues Fixed with this release:**
 
-- Fast OTA Updates! (these are the updates from Particle, not the initial update during config)
-- Pin 6 or 1 selectable for safe mode entry (hold low on boot to enter config/safe mode)
+- Fast OTA Updates! (these are the updates from Particle, not the initial update during config) 10x the speed!
+- Pin 1 selectable for safe mode entry (hold low on boot to enter config/safe mode) (Pin 6 didn't work as it is pulled down in module)
 - Various small fixes (see github issue tracker for most)
 - Better logic when in config mode - always connects to Particle when possible
 - Config App has improved device claiming, device will always be added to your account when it first connects after a successful update, even if you close out the config app.
+- OakCLI uploader now show status messages during and after the flash process.
 
 
 **Known Issues with this release:**
 
+- Sometimes FastOTA flashing fails, if this happens just power off and back on and try again. You can hold pin 1 low to force entry into config mode as well.
 - Still having issues with the initial updating - power users can now do this over serial (see http://github.com/digistump/OakRestore) - still working hard to improve this.
 - Initial connection before the user application starts is still a bit slow, but not horrible.
 - Not tested exhaustively! May brick your unit, please don't try to break it, yet... unless you really want to.
@@ -52,7 +54,7 @@ ESP8266 docs here: http://esp8266.github.io/Arduino/versions/2.0.0/doc/libraries
 **Other useful info:**
 
 - Oak.rebootToConfig() will get you into WiFi Config setup mode.
-  - If you can't boot into that then pull Pin 10 to GND and it power cycle and you will boot to that.
+  - If you can't boot into that then pull Pin 1 to GND and it power cycle and you will boot to that.
   - Next release will have an option to boot there automatically if there the WiFi can't connect.
   - It will also boot to a safe mode if there is a timeout (do to a while loop that doesn't call Particle.process()) or a exception (memory overflow, etc) - in that mode it will just wait for an update. If you power cycle it will go back to the user program.
 - DO NOT mess with the flash read/write/erase functions - erase the wrong sector and it will brick the unit.
