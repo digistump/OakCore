@@ -6,17 +6,17 @@ void setup() {
  
 void loop() {
   // put your main code here, to run repeatedly:
-  botForward(255); //speed can be any value from 0 (stopped) to 255 (full)
+  botForward(1023); //speed can be any value from 0 (stopped) to 1023 (full)
   delay(5000);
-  botReverse(255);
+  botReverse(1023);
   delay(5000);
-  botRight(255);
+  botRight(1023);
   delay(5000);
-  botHardRight(255);
+  botHardRight(1023);
   delay(5000);
-  botLeft(255);
+  botLeft(1023);
   delay(5000);
-  botHardLeft(255);
+  botHardLeft(1023);
   delay(5000);
   botStop();
   delay(5000);
@@ -25,8 +25,8 @@ void loop() {
 void botForward(int botSpeed){
  digitalWrite(2, HIGH); 
  digitalWrite(5, HIGH);
- analogWrite(0, 255 - botSpeed);
- analogWrite(1, 255 - botSpeed);
+ analogWrite(0, 1023 - botSpeed);
+ analogWrite(1, 1023 - botSpeed);
 }
  
 void botReverse(int botSpeed){
@@ -40,27 +40,27 @@ void botRight(int botSpeed){
  digitalWrite(2, LOW); 
  digitalWrite(5, HIGH);
  analogWrite(0, 0);
- analogWrite(1, 255 - botSpeed);
+ analogWrite(1, 1023 - botSpeed);
 }
  
 void botHardRight(int botSpeed){
  digitalWrite(2, LOW); 
  digitalWrite(5, HIGH);
  analogWrite(0, botSpeed);
- analogWrite(1, 255 - botSpeed);
+ analogWrite(1, 1023 - botSpeed);
 }
  
 void botLeft(int botSpeed){
  digitalWrite(2, HIGH); 
  digitalWrite(5, LOW);
- analogWrite(0, 255 - botSpeed);
+ analogWrite(0, 1023 - botSpeed);
  analogWrite(1, 0);
 }
  
 void botHardLeft(int botSpeed){
  digitalWrite(2, HIGH); 
  digitalWrite(5, LOW);
- analogWrite(0, 255 - botSpeed);
+ analogWrite(0, 1023 - botSpeed);
  analogWrite(1, botSpeed);
 }
  
