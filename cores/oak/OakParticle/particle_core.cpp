@@ -1722,16 +1722,17 @@ bool handle_update_begin(msg& message)
                 deviceConfig->system_update_pending = 1;
                 writeDeviceConfig();
               }
-              else if(deviceConfig->system_update_pending == 1){
-                set_oakboot_defaults(0);
-                deviceConfig->system_update_pending = 2;
-                writeDeviceConfig();
-              }
-              else{
-                reboot_to_fallback_updater();
-              }
-
             }
+              //else if(deviceConfig->system_update_pending == 1){
+              //  set_oakboot_defaults(0);
+              //  deviceConfig->system_update_pending = 2;
+              //  writeDeviceConfig();
+              //}
+              /*else{
+                reboot_to_fallback_updater();
+              }*/
+
+           // }
             
         }
     }
