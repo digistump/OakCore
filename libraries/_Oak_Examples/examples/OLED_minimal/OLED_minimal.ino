@@ -126,7 +126,7 @@ static void setXY(unsigned char row,unsigned char col)
 
 //==========================================================//
 // Prints a string regardless the cursor position.
-static void sendStr(unsigned char *string)
+static void sendStr(char *string)
 {
   unsigned char i=0;
   while(*string)
