@@ -2942,8 +2942,10 @@ bool spark_internal_connect(){
 #endif
       spark_connect_pending = false;
       wifi_connect_failed++;
+      #ifndef DISABLE_AUTO_CONFIG
       if(wifi_connect_failed>5)
         reboot_to_config();
+      #endif
       return false;
     }
     wifi_connect_failed = 0;

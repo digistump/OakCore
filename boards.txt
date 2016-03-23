@@ -66,6 +66,64 @@ oak1.menu.RomConfig.Full.upload.flash_address=0x0002000
 #oak1.menu.RomConfig.Half2.upload.flash_address=0x0081000
 
 
+
+oak1_noauto.name=Oak by Digistump (Pin 1 Safe Mode, Manual Config Only)
+
+oak1_noauto.upload.tool=oak_ota
+oak1_noauto.upload.speed=115200
+oak1_noauto.upload.resetmethod=ck
+oak1_noauto.upload.maximum_size=1040368
+oak1_noauto.upload.maximum_data_size=81920
+oak1_noauto.upload.wait_for_upload_port=false
+oak1_noauto.serial.disableDTR=true
+oak1_noauto.serial.disableRTS=true
+
+oak1_noauto.build.mcu=esp8266
+oak1_noauto.build.f_cpu=80000000L
+oak1_noauto.build.board=ESP8266_OAK
+oak1_noauto.build.core=oak
+oak1_noauto.build.variant=oak1_noauto
+oak1_noauto.build.flash_mode=qio
+oak1_noauto.build.flash_freq=40
+oak1_noauto.build.spiffs_pagesize=256
+
+
+oak1_noauto.menu.CpuFrequency.80=80 MHz
+oak1_noauto.menu.CpuFrequency.80.build.f_cpu=80000000L
+oak1_noauto.menu.CpuFrequency.160=160 MHz
+oak1_noauto.menu.CpuFrequency.160.build.f_cpu=160000000L
+
+oak1_noauto.menu.UploadTool.oak_ota=Particle OTA
+oak1_noauto.menu.UploadTool.oak_ota.upload.tool=oak_ota
+oak1_noauto.menu.UploadTool.oak_ota.upload.verbose=-vv
+oak1_noauto.menu.UploadTool.esptool_py=Serial (Expert Use Only - Requires Python)
+oak1_noauto.menu.UploadTool.esptool_py.upload.tool=esptool_py
+oak1_noauto.menu.UploadTool.esptool_py.upload.verbose=-vv
+
+oak1_noauto.menu.FlashSize.OAK=OAK (4M/1M SPIFFS)
+#this is in megabits - only needed for serial upload
+oak1_noauto.menu.FlashSize.OAK.build.flash_size=32m
+oak1_noauto.menu.FlashSize.OAK.build.spiffs_start=0x300000
+oak1_noauto.menu.FlashSize.OAK.build.spiffs_end=0x3FB000
+oak1_noauto.menu.FlashSize.OAK.build.spiffs_blocksize=8192
+oak1_noauto.menu.FlashSize.OAK.build.spiffs_pagesize=256
+
+oak1_noauto.menu.RomConfig.Full=Single - 1MB (Fullsize)
+oak1_noauto.menu.RomConfig.Full.build.flash_ld=oak_full.ld
+oak1_noauto.menu.RomConfig.Full.upload.maximum_size=1040368
+oak1_noauto.menu.RomConfig.Full.upload.flash_address=0x0002000
+
+#oak1_noauto.menu.RomConfig.Half1=First Half - 512KB (Half)
+#oak1_noauto.menu.RomConfig.Half1.build.flash_ld=oak_half1.ld
+#oak1_noauto.menu.RomConfig.Half1.upload.maximum_size=520176
+#oak1_noauto.menu.RomConfig.Half1.upload.flash_address=0x0002000
+
+#oak1_noauto.menu.RomConfig.Half2=Second Half - 512KB (Half)
+#oak1_noauto.menu.RomConfig.Half2.build.flash_ld=oak_half2.ld
+#oak1_noauto.menu.RomConfig.Half2.upload.maximum_size=520176
+#oak1_noauto.menu.RomConfig.Half2.upload.flash_address=0x0081000
+
+
 oak.name=Oak by Digistump (No Safe Mode - ADVANCED ONLY)
 
 oak.upload.tool=oak_ota
