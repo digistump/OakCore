@@ -32,7 +32,22 @@ public:
     BlynkWifi(BlynkArduinoClient& transp)
         : Base(transp)
     {}
+    void connectWiFi()
+    {
+        /*BLYNK_LOG("Connecting to %s", ssid);
+        if (pass && strlen(pass)) {
+        	WiFi.begin(ssid, pass);
+        } else {
+        	WiFi.begin(ssid);
+        }*/
+        while (WiFi.status() != WL_CONNECTED) {
+            ::delay(500);
+        }
+        BLYNK_LOG("Connected to WiFi");
 
+        IPAddress myip = WiFi.localIP();
+        BLYNK_LOG("My IP: %d.%d.%d.%d", myip[0], myip[1], myip[2], myip[3]);
+    }
     void connectWiFi(const char* ssid, const char* pass)
     {
         /*BLYNK_LOG("Connecting to %s", ssid);
