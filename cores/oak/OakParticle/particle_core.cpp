@@ -3110,6 +3110,10 @@ void spark_serial_end()
 // Read data from buffer
 int spark_serial_read()
 {
+    // Return if cloud serial not initialized
+    if (spark_serial_state < 2)
+        return -1;
+
     // Empty buffer?
     if (spark_receive_buffer_head == spark_receive_buffer_tail)
         return -1;
@@ -3127,6 +3131,10 @@ int spark_serial_available()
 
 size_t spark_serial_write(uint8_t b)
 {
+    // Return if cloud serial not initialized
+    if (spark_serial_state < 2)
+        return -1;
+
     // if buffer full, set the overflow flag and return
     uint8_t next = (spark_transmit_buffer_tail + 1) % MAX_SERIAL_BUFF;
     if (next != spark_transmit_buffer_head)
@@ -3150,6 +3158,10 @@ void spark_serial_flush()
 
 int spark_serial_peek()
 {
+    // Return if cloud serial not initialized
+    if (spark_serial_state < 2)
+        return -1;
+
     // Empty buffer?
     if (spark_receive_buffer_head == spark_receive_buffer_tail)
         return -1;
