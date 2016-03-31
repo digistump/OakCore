@@ -3048,7 +3048,10 @@ void spark_process(bool internal, bool allow_connect)
       return;
     }
     if(spark_connected()){
-        spark_send_tx();
+        if(millis() - lastCloudEvent > 1000){
+            if(spark_send_tx()>0)
+                lastCloudEvent = millis();
+        }
         if(!event_loop()){
             if(pClient.connected()){
               pClient.stop();
@@ -3070,7 +3073,6 @@ void spark_process(bool internal, bool allow_connect)
       else
         return;
     }
-    lastCloudEvent = millis();
 }
 
 #define MAX_SERIAL_BUFF 255
@@ -3202,13 +3204,14 @@ void spark_get_rx(const char* name, const char* data){ //this is automatically c
     }
 }
 
-void spark_send_tx(){
+int spark_send_tx(){
     if(spark_transmit_buffer_count == 0)//nothing buffer
+        return 0;
 
-        return;
     char buff[spark_transmit_buffer_count+1];
+    uint8_t b;
 
-    for(uint8_t b=0;b<spark_transmit_buffer_count;b++){
+    for(b=0;b<spark_transmit_buffer_count;b++){
         // Read from "head"
         buff[b] = spark_transmit_buffer[spark_transmit_buffer_head]; // grab next byte
         spark_transmit_buffer_head = (spark_transmit_buffer_head + 1) % MAX_SERIAL_BUFF;
@@ -3222,6 +3225,8 @@ void spark_send_tx(){
     spark_transmit_buffer_count=0;
 
     spark_send_event("oak/device/stdout", buff, 60, PRIVATE, NULL);
+
+    return b;
 }
 
 
