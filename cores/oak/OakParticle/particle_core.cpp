@@ -3048,7 +3048,10 @@ void spark_process(bool internal, bool allow_connect)
       return;
     }
     if(spark_connected()){
-        spark_send_tx();
+        if(millis() - lastCloudEvent > 1000){
+            if(spark_send_tx()>0)
+                lastCloudEvent = millis();
+        }
         if(!event_loop()){
             if(pClient.connected()){
               pClient.stop();
@@ -3070,17 +3073,16 @@ void spark_process(bool internal, bool allow_connect)
       else
         return;
     }
-    lastCloudEvent = millis();
 }
 
-#define MAX_SERIAL_BUFF 256
+#define MAX_SERIAL_BUFF 255
 
 char* spark_receive_buffer = NULL;
 char* spark_transmit_buffer = NULL;
 
-volatile uint8_t spark_receive_buffer_tail = 0;
+volatile uint8_t spark_receive_buffer_count = 0;
 volatile uint8_t spark_receive_buffer_head = 0;
-volatile uint8_t spark_transmit_buffer_tail = 0;
+volatile uint8_t spark_transmit_buffer_count = 0;
 volatile uint8_t spark_transmit_buffer_head = 0;
 volatile uint8_t spark_listening;
 volatile uint8_t spark_buffer_overflow;
@@ -3102,38 +3104,49 @@ void spark_serial_end()
     //de-allocate buffers here
     delete[] spark_receive_buffer;
     spark_receive_buffer = NULL;
+    spark_receive_buffer_count = 0;
     delete[] spark_transmit_buffer;
     spark_transmit_buffer = NULL;
+    spark_transmit_buffer_count = 0;
     spark_serial_state = 1;
 }
 
 // Read data from buffer
 int spark_serial_read()
 {
+    // Return if cloud serial not initialized
+    if (spark_serial_state < 2)
+        return -1;
+
     // Empty buffer?
-    if (spark_receive_buffer_head == spark_receive_buffer_tail)
+    if (spark_receive_buffer_count == 0)
         return -1;
 
     // Read from "head"
     uint8_t d = spark_receive_buffer[spark_receive_buffer_head]; // grab next byte
     spark_receive_buffer_head = (spark_receive_buffer_head + 1) % MAX_SERIAL_BUFF;
+    spark_receive_buffer_count--;
     return d;
 }
 
 int spark_serial_available()
 {
-    return (spark_receive_buffer_tail + MAX_SERIAL_BUFF - spark_receive_buffer_head) % MAX_SERIAL_BUFF;
+    return spark_receive_buffer_count;
 }
 
 size_t spark_serial_write(uint8_t b)
 {
+    // Return if cloud serial not initialized
+    if (spark_serial_state < 2)
+        return -1;
+
     // if buffer full, set the overflow flag and return
-    uint8_t next = (spark_transmit_buffer_tail + 1) % MAX_SERIAL_BUFF;
-    if (next != spark_transmit_buffer_head)
+    if (spark_transmit_buffer_count < MAX_SERIAL_BUFF)
     {
       // save new data in buffer: tail points to where byte goes
-      spark_transmit_buffer[spark_transmit_buffer_tail] = b; // save new byte
-      spark_transmit_buffer_tail = next;
+      uint8_t tail=(spark_transmit_buffer_head + spark_transmit_buffer_count) % MAX_SERIAL_BUFF;
+      spark_transmit_buffer[tail] = b; // save new byte
+      spark_transmit_buffer_count++;
       return 1;
     } 
     else 
@@ -3145,13 +3158,17 @@ size_t spark_serial_write(uint8_t b)
 
 void spark_serial_flush()
 {
-    spark_transmit_buffer_tail = spark_transmit_buffer_head;
+    spark_transmit_buffer_count = 0;
 }
 
 int spark_serial_peek()
 {
+    // Return if cloud serial not initialized
+    if (spark_serial_state < 2)
+        return -1;
+
     // Empty buffer?
-    if (spark_receive_buffer_head == spark_receive_buffer_tail)
+    if (spark_receive_buffer_count == 0)
         return -1;
 
     // Read from "head"
@@ -3168,13 +3185,14 @@ void spark_get_rx(const char* name, const char* data){ //this is automatically c
 
         while(*data != '\0'){
             // if buffer full, set the overflow flag and return
-            uint8_t next = (spark_receive_buffer_tail + 1) % MAX_SERIAL_BUFF;
-            if (next != spark_receive_buffer_head)
+            uint8_t tail = (spark_receive_buffer_head +
+                            spark_receive_buffer_count) % MAX_SERIAL_BUFF;
+            if (spark_receive_buffer_count < MAX_SERIAL_BUFF)
             {
             // save new data in buffer: tail points to where byte goes
-                spark_receive_buffer[spark_receive_buffer_tail] = *data; // save new byte
+                spark_receive_buffer[tail] = *data; // save new byte
                 data++;
-                spark_receive_buffer_tail = next;
+                spark_receive_buffer_count++;
             } 
             else 
             {
@@ -3186,20 +3204,29 @@ void spark_get_rx(const char* name, const char* data){ //this is automatically c
     }
 }
 
-void spark_send_tx(){
+int spark_send_tx(){
+    if(spark_transmit_buffer_count == 0)//nothing buffer
+        return 0;
 
-    if(spark_transmit_buffer_tail == spark_transmit_buffer_head)//nothing buffer
-        return;
-    uint8_t buffer_length = (spark_transmit_buffer_tail + MAX_SERIAL_BUFF - spark_transmit_buffer_head) % MAX_SERIAL_BUFF;
-    char buff[buffer_length];
+    char buff[spark_transmit_buffer_count+1];
+    uint8_t b;
 
-    for(uint8_t b;b<buffer_length;b++){
+    for(b=0;b<spark_transmit_buffer_count;b++){
         // Read from "head"
         buff[b] = spark_transmit_buffer[spark_transmit_buffer_head]; // grab next byte
         spark_transmit_buffer_head = (spark_transmit_buffer_head + 1) % MAX_SERIAL_BUFF;
     }
 
+    // Need to null terminate the buffer so that spark_send_event knows where
+    // the end is
+    buff[spark_transmit_buffer_count]=0;
+
+    // Zero the buffer count since we've taken its contents
+    spark_transmit_buffer_count=0;
+
     spark_send_event("oak/device/stdout", buff, 60, PRIVATE, NULL);
+
+    return b;
 }
 
 
