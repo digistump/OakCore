@@ -2792,6 +2792,9 @@ const char* RESET_EVENT = "spark/device/reset";
 const char* OAK_RESET_EVENT = "oak/device/reset";
 const char* OAK_RX_EVENT = "oak/device/stdin";
 
+#define OAK_RESET_EVENT_LEN 16
+#define OAK_RX_EVENT_LEN    16
+
 void SystemEvents(const char* name, const char* data)
 {
     if (!strncmp(name, CLAIM_EVENTS, strlen(CLAIM_EVENTS))) {
@@ -2810,7 +2813,10 @@ void SystemEvents(const char* name, const char* data)
                 ESP.reset();
         }
     }
-    if (!strcmp(name, OAK_RESET_EVENT)) {
+    if (!strncmp(name, OAK_RESET_EVENT, OAK_RESET_EVENT_LEN) &&
+        (name[OAK_RESET_EVENT_LEN] == 0 ||
+        (name[OAK_RESET_EVENT_LEN] == '/' &&
+        !strcmp((name+OAK_RESET_EVENT_LEN+1),deviceConfig->device_id)))) {
         if (data && *data) {
             if (!strcmp("config mode", data))
                 reboot_to_config();
@@ -3180,7 +3186,11 @@ void spark_get_rx(const char* name, const char* data){ //this is automatically c
   if(spark_serial_state < 2){
     return;
   }
-
+    if ((name[OAK_RX_EVENT_LEN] != 0 &&
+        (name[OAK_RX_EVENT_LEN] != '/' ||
+        strcmp((name+OAK_RX_EVENT_LEN+1),deviceConfig->device_id)))) {
+        return;
+    }
     if (data && *data) {
 
         while(*data != '\0'){
