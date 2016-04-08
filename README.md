@@ -1,4 +1,4 @@
-## You must update your Arduino Oak package to 0.9.5 via the boards manager! 
+## You must update your Arduino Oak package to 1.0.0+ via the boards manager! 
 
 **Due to bugs in the Arduino 1.6.6 and 1.6.7 IDEs we strongly suggest using 1.6.5r2 (for all boards not just ours)**
 
@@ -9,26 +9,12 @@
 **HOW TO INSTALL AND USE THIS:** http://digistump.com/wiki/oak/tutorials/arduino
 **TROUBLESHOOTING:** http://digistump.com/wiki/oak/tutorials/troubleshooting
 
+**PLEASE GO TO THE FORUMS FOR HELP:** http://digistump.com/board
+
 **PLEASE FILE ISSUES FOR BUGS:** with as much detail as possible!
 
-**Issues Fixed with this release:**
-
-- Fast OTA Updates! (these are the updates from Particle, not the initial update during config) 10x the speed!
-- Pin 1 selectable for safe mode entry (hold low on boot to enter config/safe mode) (Pin 6 didn't work as it is pulled down in module)
-- Various small fixes (see github issue tracker for most)
-- Better logic when in config mode - always connects to Particle when possible
-- Config App has improved device claiming, device will always be added to your account when it first connects after a successful update, even if you close out the config app.
-- OakCLI uploader now show status messages during and after the flash process.
 
 
-**Known Issues with this release:**
-
-- Sometimes FastOTA flashing fails, if this happens just power off and back on and try again. You can hold pin 1 low to force entry into config mode as well.
-- Still having issues with the initial updating - power users can now do this over serial (see http://github.com/digistump/OakRestore) - still working hard to improve this.
-- Initial connection before the user application starts is still a bit slow, but not horrible.
-- Not tested exhaustively! May brick your unit, please don't try to break it, yet... unless you really want to.
-- If you brick your unit you'll need a 3.3v serial adapter to revive it. (See https://github.com/digistump/OakRestore)
-- Serial over the cloud is not fully working yet - a serial adapter on pins 3(RX) and 4(TX) can be a big help until that gets sorted in the next release or if you are debugging anything major, for now.
 
 **Working Particle APIs:**
 
