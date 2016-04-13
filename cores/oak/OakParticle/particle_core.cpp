@@ -2826,6 +2826,13 @@ void SystemEvents(const char* name, const char* data)
                 reboot_to_fallback_updater();
             else if (!strcmp("reboot", data))
                 ESP.reset();
+            else if (!strcmp("mode?",data))
+                if (bootConfig->current_rom == bootConfig->config_rom)
+                    spark_send_event("oak/device/mode/config", "", 60, PRIVATE, NULL);
+                else if (bootConfig->current_rom == bootConfig->program_rom)
+                    spark_send_event("oak/device/mode/user", "", 60, PRIVATE, NULL);
+                else if (bootConfig->current_rom == bootConfig->update_rom)
+                    spark_send_event("oak/device/mode/update", "", 60, PRIVATE, NULL);
         }
     }
     if (!strcmp(name, OAK_RX_EVENT)) {
