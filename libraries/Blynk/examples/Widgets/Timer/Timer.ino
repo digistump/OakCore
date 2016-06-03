@@ -20,8 +20,8 @@
  * In this case you don't need to write code.
  * Blynk handles that for you.
  *
- * App dashboard setup:
- *   Timer widget attached to V5 and running dashboard.
+ * App project setup:
+ *   Timer widget attached to V5 and running project.
  *
  **************************************************************/
 
@@ -30,21 +30,22 @@
 #include <Ethernet.h>
 #include <BlynkSimpleEthernet.h> // This part is for Ethernet stuff
 
-char auth[] = "YourAuthToken"; // Put your Auth Token here. (see Step 3 above)
+char auth[] = "YourAuthToken";
 
 void setup()
 {
   Serial.begin(9600); // See the connection status in Serial Monitor
-  Blynk.begin(auth);  // Here your Arduino connects to the Blynk Cloud.
+  Blynk.begin(auth);
 }
 
 BLYNK_WRITE(V5)
 {
-  //You'll get HIGH/1 at startTime and LOW/0 at stopTime.
-  //this method will be triggered every day
-  //until you remove widget or stop dashboard or
-  //clean stop/start fields of widget
-  BLYNK_LOG("Got a value: %s", param.asStr());
+  // You'll get HIGH/1 at startTime and LOW/0 at stopTime.
+  // this method will be triggered every day
+  // until you remove widget or stop project or
+  // clean stop/start fields of widget
+  Serial.print("Got a value: ");
+  Serial.println(param.asStr());
 }
 
 void loop()

@@ -16,8 +16,10 @@
  * Blynk can provide your device with time data, like an RTC.
  * Please note that the accuracy of this method is up to several seconds.
  *
- * App dashboard setup:
+ * App project setup:
  *   RTC widget on V5
+ *   Value Display widget on V1
+ *   Value Display widget on V2
  *
  * WARNING :
  * For this example you'll need SimpleTimer library:
@@ -36,13 +38,48 @@
 #include <Ethernet.h>
 #include <BlynkSimpleEthernet.h>
 #include <SimpleTimer.h>
-#include <Time.h>
+#include <TimeLib.h>
+#include <WidgetRTC.h>
 
 // You should get Auth Token in the Blynk App.
 // Go to the Project Settings (nut icon).
 char auth[] = "YourAuthToken";
 
 SimpleTimer timer;
+
+WidgetRTC rtc;
+
+BLYNK_ATTACH_WIDGET(rtc, V5);
+
+// Utility function for digital clock display: prints preceding colon and leading 0
+void printDigits(int digits)
+{
+  Serial.print(":");
+  if (digits < 10) {
+    Serial.print('0');
+  }
+  Serial.print(digits);
+}
+
+// Digital clock display of the time
+void clockDisplay()
+{
+  // You can call hour(), minute(), ... at any time
+  // Please see Time library examples for details
+
+  String currentTime = String(hour()) + ":" + minute() + ":" + second();
+  String currentDate = String(day()) + " " + month() + " " + year();
+  Serial.print("Current time: ");
+  Serial.print(currentTime);
+  Serial.print(" ");
+  Serial.print(currentDate);
+  Serial.println();
+
+  // Send time to the App
+  Blynk.virtualWrite(V1, currentTime);
+  // Send date to the App
+  Blynk.virtualWrite(V2, currentDate);
+}
 
 void setup()
 {
@@ -53,40 +90,15 @@ void setup()
     // Wait until connected
   }
 
-  // Set function to call when time sync required
-  setSyncProvider(requestTimeSync);
+  // Begin synchronizing time
+  rtc.begin();
+
+  // Other Time library functions can be used, like:
+  //   timeStatus(), setSyncInterval(interval)...
+  // Read more: http://www.pjrc.com/teensy/td_libs_Time.html
 
   // Display digital clock every 10 seconds
   timer.setInterval(10000L, clockDisplay);
-}
-
-BLYNK_WRITE(V5)
-{
-  const unsigned long DEFAULT_TIME = 1357041600; // Jan 1 2013
-  unsigned long blynkTime = param.asLong();
-
-  if ( blynkTime >= DEFAULT_TIME) { // Check the integer is a valid time (greater than Jan 1 2013)
-    setTime(blynkTime);             // Sync Time library clock to the value received from Blynk
-    BLYNK_LOG("Time sync: OK");
-  }
-}
-
-// This is called by Time library when it needs time sync
-time_t requestTimeSync()
-{
-  Blynk.syncVirtual(V5); // Request RTC widget (V5) update from the server
-  return 0;              // Tell the Time library that we'll set it later
-}
-
-// Digital clock display of the time
-void clockDisplay()
-{
-  // You can call hour(), minute(), ... at any time
-  // Please see Time library examples for details
-  BLYNK_LOG("Current time: %02d:%02d:%02d %02d %02d %d",
-            hour(), minute(), second(),
-            day(), month(), year()
-           );
 }
 
 void loop()

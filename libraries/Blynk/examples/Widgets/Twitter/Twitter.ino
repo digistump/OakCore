@@ -15,14 +15,14 @@
  **************************************************************
  * Simple tweet example
  *
- * App dashboard setup:
+ * App project setup:
  *   Twitter widget (connect it to your Twitter account!)
  *
  * Connect a button to pin 2 and GND...
  * Pressing this button will also tweet a message! ;)
  *
  **************************************************************/
-//#define BLYNK_DEBUG
+
 #define BLYNK_PRINT Serial
 #include <SPI.h>
 #include <Ethernet.h>
@@ -59,7 +59,7 @@ void setup()
 void tweetUptime()
 {
   long uptime = millis() / 60000L;
-  BLYNK_LOG("Tweeting every 10 minutes ;)");
+  Serial.println("Tweeting every 10 minutes ;)");
 
   // Actually send the message.
   // Note:
@@ -73,7 +73,7 @@ void tweetOnButtonPress()
   // Invert state, since button is "Active LOW"
   int isButtonPressed = !digitalRead(2);
   if (isButtonPressed) {
-    BLYNK_LOG("Button is pressed.");
+    Serial.println("Button is pressed.");
 
     Blynk.tweet("Yaaay... button is pressed! :)\n #arduino #IoT #blynk @blynk_app");
   }

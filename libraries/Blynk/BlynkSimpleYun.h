@@ -11,10 +11,6 @@
 #ifndef BlynkSimpleYun_h
 #define BlynkSimpleYun_h
 
-#ifndef BLYNK_INFO_DEVICE
-#define BLYNK_INFO_DEVICE  "Arduino Yun"
-#endif
-
 #include <Blynk/BlynkProtocol.h>
 #include <Adapters/BlynkArduinoClient.h>
 #include <YunClient.h>
@@ -50,7 +46,7 @@ public:
                const char* domain = BLYNK_DEFAULT_DOMAIN,
                uint16_t    port   = BLYNK_DEFAULT_PORT)
     {
-        BLYNK_LOG("Bridge init...");
+        BLYNK_LOG1(BLYNK_F("Bridge init..."));
         Bridge.begin();
     	config(auth, domain, port);
     }
@@ -59,7 +55,7 @@ public:
                IPAddress   ip,
                uint16_t    port = BLYNK_DEFAULT_PORT)
     {
-        BLYNK_LOG("Bridge init...");
+        BLYNK_LOG1(BLYNK_F("Bridge init..."));
         Bridge.begin();
     	config(auth, ip, port);
     }

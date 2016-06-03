@@ -18,6 +18,55 @@
 #include <BlynkApiArduino.h>
 #include <Blynk/BlynkProtocol.h>
 
+class BlynkTransportStream
+{
+public:
+    BlynkTransportStream()
+        : stream(NULL), conn(0)
+    {}
+
+    void begin(Stream& s) {
+        stream = &s;
+    }
+
+    bool connect() {
+        BLYNK_LOG1(BLYNK_F("Connecting..."));
+        stream->flush();
+        return conn = true;
+    }
+    void disconnect() { conn = false; }
+
+    size_t read(void* buf, size_t len) {
+        return stream->readBytes((char*)buf, len);
+    }
+    size_t write(const void* buf, size_t len) {
+        stream->write((const uint8_t*)buf, len);
+        return len;
+    }
+
+    bool connected() { return conn; }
+    int available() { return stream->available(); }
+
+protected:
+    Stream* stream;
+    bool    conn;
+};
+
+class BlynkStream
+    : public BlynkProtocol<BlynkTransportStream>
+{
+    typedef BlynkProtocol<BlynkTransportStream> Base;
+public:
+    BlynkStream(BlynkTransportStream& transp)
+        : Base(transp)
+    {}
+
+    void begin(const char* auth, Stream& stream) {
+        Base::begin(auth);
+        this->conn.begin(stream);
+    }
+};
+
 template <class T>
 class BlynkTransportSerial
 {
@@ -31,7 +80,7 @@ public:
     }
 
     bool connect() {
-        BLYNK_LOG("Connecting...");
+        BLYNK_LOG1(BLYNK_F("Connecting..."));
         return conn = true;
     }
     void disconnect() { conn = false; }
@@ -40,7 +89,8 @@ public:
         return stream.readBytes((char*)buf, len);
     }
     size_t write(const void* buf, size_t len) {
-        return stream.write((const uint8_t*)buf, len);
+        stream.write((const uint8_t*)buf, len);
+        return len;
     }
 
     bool connected() { return conn; }
@@ -68,6 +118,48 @@ public:
     }
 
     int connected() { return this->conn && this->stream; }
+};
+
+template <class T>
+class BlynkTransportDigisparkCDC
+{
+public:
+    BlynkTransportDigisparkCDC(T& stream)
+        : stream(stream), conn(0)
+    {}
+
+    void begin(uint32_t baud) {
+        stream.begin();
+    }
+
+    bool connect() {
+        BLYNK_LOG1(BLYNK_F("Connecting..."));
+        return conn = true;
+    }
+    void disconnect() { conn = false; }
+
+    size_t read(void* buf, size_t len) {
+        char* beg = (char*)buf;
+        char* end = beg + len;
+        while (beg < end) {
+            int c = stream.read();
+            if (c < 0)
+                break;
+            *beg++ = (char)c;
+        }
+        return len;
+    }
+    size_t write(const void* buf, size_t len) {
+        stream.write((const uint8_t*)buf, len);
+        return len;
+    }
+
+    bool connected() { return conn; }
+    int available() { return stream.available(); }
+
+protected:
+    T&     stream;
+    bool   conn;
 };
 
 template <class T>

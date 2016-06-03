@@ -152,7 +152,11 @@ void BlynkParam::add(const String& str)
 {
     size_t len = str.length()+1;
     char buff[len];
+#if defined(ARDUINO_AVR_DIGISPARK)
+    const_cast<String&>(str).toCharArray(buff, len);
+#else
     str.toCharArray(buff, len);
+#endif
     BlynkParam::add(buff, len);
 }
 
@@ -166,7 +170,7 @@ void BlynkParam::add(String& str)
 }
 #endif
 
-#if defined(__AVR__)
+#if defined(__AVR__) || defined (ARDUINO_ARCH_ARC32)
 
     #include <stdlib.h>
 

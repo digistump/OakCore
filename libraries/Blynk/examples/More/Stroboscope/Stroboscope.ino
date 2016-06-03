@@ -24,7 +24,7 @@
  *   http://playground.arduino.cc/Code/SimpleTimer
  *
  *
- * App dashboard setup:
+ * App project setup:
  *   Button widget (Switch) on V1
  *   Slider widget (100...1000) on V2
  *
@@ -44,6 +44,12 @@ char auth[] = "YourAuthToken";
 
 SimpleTimer timer;
 int t1;
+
+// Toggle LED
+void ledBlynk()
+{
+  digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+}
 
 // Enable/disable blinking using virtual pin 1
 BLYNK_WRITE(V1)
@@ -66,12 +72,6 @@ BLYNK_WRITE(V2)
   if (!wasEnabled) {
     timer.disable(t1);
   }
-}
-
-// Toggle LED
-void ledBlynk()
-{
-  digitalWrite(LED_PIN, !digitalRead(LED_PIN));
 }
 
 void setup()

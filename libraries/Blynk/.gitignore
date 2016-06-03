@@ -2,8 +2,11 @@ linux/blynk
 linux/wiringPi
 scripts/certs/client.*
 scripts/blynk/gateway/bluepy
+*.log
+*.bak
 *.pyc
 *.o
 .cproject
 .project
 .settings
+.development

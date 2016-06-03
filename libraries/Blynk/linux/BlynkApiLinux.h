@@ -21,14 +21,14 @@
     #define BLYNK_INFO_DEVICE  "Linux"
 #endif
 
-static
+static inline
 void delay(unsigned long ms)
 {
     usleep(ms * 1000);
 }
 
 static
-unsigned long millis(void)
+millis_time_t millis()
 {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts );
@@ -38,6 +38,13 @@ unsigned long millis(void)
 template<class Proto>
 void BlynkApi<Proto>::Init()
 {
+}
+
+template<class Proto>
+BLYNK_FORCE_INLINE
+millis_time_t BlynkApi<Proto>::getMillis()
+{
+    return millis();
 }
 
 #ifdef BLYNK_NO_INFO
@@ -73,12 +80,11 @@ void BlynkApi<Proto>::sendInfo()
     BlynkParam profile_dyn(mem_dyn, 0, sizeof(mem_dyn));
     profile_dyn.add_key("conn", "Socket");
 
-    static_cast<Proto*>(this)->sendCmd(BLYNK_CMD_HARDWARE, 0, profile, profile_len, profile_dyn.getBuffer(), profile_dyn.getLength());
+    static_cast<Proto*>(this)->sendCmd(BLYNK_CMD_HARDWARE_INFO, 0, profile, profile_len, profile_dyn.getBuffer(), profile_dyn.getLength());
     return;
 }
 
 #endif
-
 
 template<class Proto>
 BLYNK_FORCE_INLINE
@@ -104,9 +110,8 @@ void BlynkApi<Proto>::processCmd(const void* buff, size_t len)
         while (it < param.end()) {
             ++it;
 #ifdef BLYNK_DEBUG
-            BLYNK_LOG("Invalid pinMode %u -> %s", pin, it.asStr());
+            BLYNK_LOG4(BLYNK_F("Invalid pin "), pin, BLYNK_F(" mode "), it.asStr());
 #endif
-
             ++it;
         }
     } break;
@@ -123,7 +128,6 @@ void BlynkApi<Proto>::processCmd(const void* buff, size_t len)
         if (++it >= param.end())
             return;
 
-        BLYNK_LOG("digitalWrite %d -> %d", pin, it.asInt());
         // TODO: digitalWrite(pin, it.asInt() ? HIGH : LOW);
     } break;
     case BLYNK_HW_AW: {
@@ -131,7 +135,6 @@ void BlynkApi<Proto>::processCmd(const void* buff, size_t len)
         if (++it >= param.end())
             return;
 
-        BLYNK_LOG("analogWrite %d -> %d", pin, it.asInt());
         // TODO: analogWrite(pin, it.asInt());
     } break;
 
@@ -159,7 +162,7 @@ void BlynkApi<Proto>::processCmd(const void* buff, size_t len)
         }
     } break;
     default:
-        BLYNK_LOG("Invalid HW cmd: %s", cmd);
+        BLYNK_LOG2(BLYNK_F("Invalid HW cmd: "), cmd);
         static_cast<Proto*>(this)->sendCmd(BLYNK_CMD_RESPONSE, static_cast<Proto*>(this)->currentMsgId, NULL, BLYNK_ILLEGAL_COMMAND);
     }
 }

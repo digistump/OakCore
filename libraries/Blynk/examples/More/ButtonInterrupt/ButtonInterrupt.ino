@@ -16,7 +16,7 @@
  * This example shows how to monitor a button state
  * using interrupts mechanism.
  *
- * App dashboard setup:
+ * App project setup:
  *   LED widget on V1
  *
  **************************************************************/
@@ -47,9 +47,9 @@ void checkPin()
 {
   // Invert state, since button is "Active LOW"
   if (digitalRead(2)) {
-      led1.off();
+    led1.off();
   } else {
-      led1.on();
+    led1.on();
   }
 }
 

@@ -15,7 +15,7 @@
  **************************************************************
  * Simple e-mail example
  *
- * App dashboard setup:
+ * App project setup:
  *   E-mail Widget
  *
  * Connect a button to digital pin 2 and GND
@@ -24,8 +24,12 @@
  * WARNING: You are limited to send ONLY ONE E-MAIL PER MINUTE!
  *
  **************************************************************/
-//#define BLYNK_DEBUG
+
 #define BLYNK_PRINT Serial
+
+/* Set this to a bigger number, to enable sending longer messages */
+//#define BLYNK_MAX_SENDBYTES 128
+
 #include <SPI.h>
 #include <Ethernet.h>
 #include <BlynkSimpleEthernet.h>
@@ -65,7 +69,7 @@ void emailOnButtonPress()
 
   if (isButtonPressed) // You can write any condition to trigger e-mail sending
   {
-    BLYNK_LOG("Button is pressed."); // This can be seen in the Serial Monitor
+    Serial.println("Button is pressed."); // This can be seen in the Serial Monitor
     Blynk.email("your_email@mail.com", "Subject: Button Logger", "You just pushed the button...");
 
   }

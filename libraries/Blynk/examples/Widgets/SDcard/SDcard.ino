@@ -15,7 +15,7 @@
  **************************************************************
  * Browse SD card from phone App
  *
- * App dashboard setup:
+ * App project setup:
  *   SD widget on V1
  *
  **************************************************************/
@@ -33,7 +33,7 @@ char auth[] = "YourAuthToken";
 
 WidgetSD sd;
 
-BLYNK_ATTACH_WIDGET(sd, 1)
+BLYNK_ATTACH_WIDGET(sd, V1)
 
 void setup()
 {

@@ -14,35 +14,25 @@
 #include <Blynk/BlynkApi.h>
 #include <Arduino.h>
 
-#if   defined(__AVR_ATmega168__)
-    #define BLYNK_INFO_CPU      "ATmega168"
-#elif defined(__AVR_ATmega328P__)
-    #define BLYNK_INFO_CPU      "ATmega328P"
-#elif defined(__AVR_ATmega1280__)
-    #define BLYNK_INFO_CPU      "ATmega1280"
-#elif defined(__AVR_ATmega1284__)
-    #define BLYNK_INFO_CPU      "ATmega1284"
-#elif defined(__AVR_ATmega2560__)
-    #define BLYNK_INFO_CPU      "ATmega2560"
-#elif defined(__AVR_ATmega32U4__)
-    #define BLYNK_INFO_CPU      "ATmega32U4"
-#elif defined(__SAM3X8E__)
-    #define BLYNK_INFO_CPU      "AT91SAM3X8E"
-#endif
-
-#ifndef BLYNK_INFO_DEVICE
-    #if defined(ENERGIA)
-        #define BLYNK_INFO_DEVICE  "Energia"
-    #elif defined(SPARK) || defined(PARTICLE)
-        #define BLYNK_INFO_DEVICE  "Particle"
-    #else
-        #define BLYNK_INFO_DEVICE  "Arduino"
-    #endif
-#endif
-
 template<class Proto>
 void BlynkApi<Proto>::Init()
 {
+}
+
+template<class Proto>
+BLYNK_FORCE_INLINE
+millis_time_t BlynkApi<Proto>::getMillis()
+{
+// TODO: Remove workaround for Intel Curie
+// https://forum.arduino.cc/index.php?topic=391836.0
+#ifdef ARDUINO_ARCH_ARC32
+	noInterrupts();
+	uint64_t t = millis();
+	interrupts();
+	return t;
+#else
+    return millis();
+#endif
 }
 
 #ifdef BLYNK_NO_INFO
@@ -86,7 +76,6 @@ void BlynkApi<Proto>::sendInfo()
 
 #endif
 
-
 template<class Proto>
 BLYNK_FORCE_INLINE
 void BlynkApi<Proto>::processCmd(const void* buff, size_t len)
@@ -96,15 +85,19 @@ void BlynkApi<Proto>::processCmd(const void* buff, size_t len)
     if (it >= param.end())
         return;
     const char* cmd = it.asStr();
+#if defined(MPIDE)
+    uint16_t cmd16;
+    memcpy(&cmd16, cmd, sizeof(cmd16));
+#else
     const uint16_t cmd16 = *(uint16_t*)cmd;
-
+#endif
     if (++it >= param.end())
         return;
 
 #if defined(analogInputToDigitalPin)
     // Good! Analog pins can be referenced on this device by name.
     const uint8_t pin = (it.asStr()[0] == 'A') ?
-			 analogInputToDigitalPin(atoi(it.asStr()+1)) :
+                         analogInputToDigitalPin(atoi(it.asStr()+1)) :
                          it.asInt();
 #else
     #warning "analogInputToDigitalPin not defined => Named analog pins will not work"
@@ -118,7 +111,6 @@ void BlynkApi<Proto>::processCmd(const void* buff, size_t len)
     case BLYNK_HW_PM: {
         while (it < param.end()) {
             ++it;
-            //BLYNK_LOG("pinMode %u -> %s", pin, it.asStr());
             if (!strcmp(it.asStr(), "in")) {
                 pinMode(pin, INPUT);
             } else if (!strcmp(it.asStr(), "out") || !strcmp(it.asStr(), "pwm")) {
@@ -133,7 +125,7 @@ void BlynkApi<Proto>::processCmd(const void* buff, size_t len)
 #endif
             } else {
 #ifdef BLYNK_DEBUG
-                BLYNK_LOG("Invalid pinMode %u -> %s", pin, it.asStr());
+                BLYNK_LOG4(BLYNK_F("Invalid pin "), pin, BLYNK_F(" mode "), it.asStr());
 #endif
             }
             ++it;
@@ -152,7 +144,6 @@ void BlynkApi<Proto>::processCmd(const void* buff, size_t len)
         if (++it >= param.end())
             return;
 
-        //BLYNK_LOG("digitalWrite %d -> %d", pin, it.asInt());
 #ifdef ESP8266
         // Disable PWM...
         analogWrite(pin, 0);
@@ -175,7 +166,6 @@ void BlynkApi<Proto>::processCmd(const void* buff, size_t len)
         if (++it >= param.end())
             return;
 
-        //BLYNK_LOG("analogWrite %d -> %d", pin, it.asInt());
 #ifndef BLYNK_MINIMIZE_PINMODE_USAGE
         pinMode(pin, OUTPUT);
 #endif
@@ -206,7 +196,7 @@ void BlynkApi<Proto>::processCmd(const void* buff, size_t len)
         }
     } break;
     default:
-        BLYNK_LOG("Invalid HW cmd: %s", cmd);
+        BLYNK_LOG2(BLYNK_F("Invalid HW cmd: "), cmd);
         static_cast<Proto*>(this)->sendCmd(BLYNK_CMD_RESPONSE, static_cast<Proto*>(this)->currentMsgId, NULL, BLYNK_ILLEGAL_COMMAND);
     }
 }

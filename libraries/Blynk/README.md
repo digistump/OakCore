@@ -1,11 +1,11 @@
-[![Build Status](https://travis-ci.org/blynkkk/blynk-library.svg)](https://travis-ci.org/blynkkk/blynk-library)
+[![GitHub version](https://img.shields.io/github/release/blynkkk/blynk-library.svg)](https://github.com/blynkkk/blynk-library/releases/latest)
+[![GitHub download](https://img.shields.io/github/downloads/blynkkk/blynk-library/total.svg)](https://github.com/blynkkk/blynk-library/releases/latest)
+[![GitHub stars](https://img.shields.io/github/stars/blynkkk/blynk-library.svg)](https://github.com/blynkkk/blynk-library)
+[![GitHub issues](https://img.shields.io/github/issues/blynkkk/blynk-library.svg)](https://github.com/vshymanskyy/blynk-library-js/issues)
+[![Build Status](https://img.shields.io/travis/blynkkk/blynk-library.svg)](https://travis-ci.org/blynkkk/blynk-library)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/blynkkk/blynk-library)
 
 [Documentation](http://docs.blynk.cc/#blynk-firmware)
-
-Implementations for other platforms:
-* [Node.js + Espruino](https://github.com/vshymanskyy/blynk-library-js)
-* [Particle](https://github.com/vshymanskyy/blynk-library-spark)
-* [MicroPython WiPy](https://github.com/wipy/wipy/tree/master/lib/blynk)
 
 __________
 
@@ -20,6 +20,7 @@ If you need more information, please follow these links:
 * [Google Play](https://play.google.com/store/apps/details?id=cc.blynk)
 * [Facebook](http://www.fb.com/blynkapp)
 * [Twitter](http://twitter.com/blynk_app)
+* [Blynk Server](https://github.com/blynkkk/blynk-server)
 * [Kickstarter](https://www.kickstarter.com/projects/167134865/blynk-build-an-app-for-your-arduino-project-in-5-m/description)
 
 ![Dashboard settings](https://github.com/blynkkk/blynk-server/blob/master/docs/overview/dash_settings.png)
@@ -45,6 +46,13 @@ You can easily apply any type of board/connection to all examples.
 Full list of supported hardware is [here](http://community.blynk.cc/t/hardware-supported-by-blynk).  
 Please [see examples](examples/BoardsAndShields) for different connection types.
 
-### License
+__________
 
+### Implementations for other platforms
+* [Particle](https://github.com/vshymanskyy/blynk-library-spark)
+* [Node.js + Espruino](https://github.com/vshymanskyy/blynk-library-js)
+* [MicroPython WiPy](https://github.com/wipy/wipy/tree/master/lib/blynk)
+* [MBED](https://developer.mbed.org/users/vshymanskyy/code/Blynk/)
+
+### License
 This project is released under The MIT License (MIT)

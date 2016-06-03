@@ -7,12 +7,12 @@ popd > /dev/null
 # === Edit default options to match your need ===
 
 FROM_TYPE="SER" # SER, TCP
-TO_TYPE="SSL"   # TCP, SSL
+TO_TYPE="TCP"   # TCP, SSL. TODO Switch to SSL when socat supports SNI
 
 COMM_PORT_LINUX=/dev/ttyUSB0
 COMM_PORT_OSX=/dev/tty.usbmodem
 COMM_BAUD=9600
-SERV_ADDR=cloud.blynk.cc
+SERV_ADDR=blynk-cloud.com
 SERV_PORT_SSL=8441
 SERV_PORT_TCP=8442
 SERV_PORT_2WAY=8443
@@ -38,7 +38,7 @@ usage="
                      COM1               (on Windows)
                      /dev/tty.usbserial (on OSX)
       -b,--baud      9600
-      -s,--server    cloud.blynk.cc
+      -s,--server    blynk-cloud.com
       -p,--port      8442
 
     If the specified serial port is not found, it will ask to enter another one.
@@ -62,7 +62,7 @@ detect_conflicts
 if ! hash socat 2>/dev/null; then
     echo "This script uses socat utility, but could not find it."
     echo
-    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo "  Try installing it using: sudo apt-get install socat"
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         echo "  Try installing it using: brew install socat"
@@ -71,7 +71,7 @@ if ! hash socat 2>/dev/null; then
 fi
 
 # Execute getopt
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     ARGS=$(getopt -o hf:c:b:l:t:s:p: -l "help,from:,comm:,baud:,listen:,to:,server:,port:,cert:" -n "blynk-gateway.sh" -- "$@");
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     ARGS=$(getopt hf:c:b:l:t:s:p: $*);
@@ -169,7 +169,7 @@ TCP_ATTR="nodelay" #,nonblock=1,rcvtimeo=1,sndtimeo=1
 SER_ATTR="raw,echo=0,clocal=1,cs8,nonblock=1"
 
 if [[ "$FROM_TYPE" == "SER" ]]; then
-    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         COMM_PORT=$COMM_PORT_LINUX
         COMM_WCARD="/dev/ttyUSB* /dev/ttyACM*"
         COMM_STTY="-F"
@@ -193,7 +193,7 @@ if [[ "$FROM_TYPE" == "SER" ]]; then
     # Disable restarting
     #stty $COMM_STTY $COMM_PORT -hupcl
 
-    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         FROM_ATTR="FILE:$COMM_PORT,$SER_ATTR,b$COMM_BAUD"
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         FROM_ATTR="GOPEN:$COMM_PORT,$SER_ATTR,ixoff=0,ixon=0,ispeed=$COMM_BAUD,ospeed=$COMM_BAUD,crtscts=0"
