@@ -2570,6 +2570,14 @@ void remove_event_handlers(const char* event_name)
 
 bool particleConnect(){
   uint8_t max_connect_tries = 3;
+  // Generate a random local port number, to avoid issues with
+  // previous connections left hanging on the server
+  // register used is apparently a RNG, see:
+  // http://esp8266-re.foogod.com/wiki/Random_Number_Generator
+  uint16_t local_port = ESP8266_DREG(0x20E44);
+  // Avoid using low port numbers, 4k is probably overkill, but it doesn't matter.
+  if(local_port < 4096) local_port += 4096;
+    pClient.setLocalPortStart((uint16_t)local_port);
   if(deviceConfig->server_address_type == 1){
     while(!pClient.connect(deviceConfig->server_address_domain,SPARK_SERVER_PORT) && max_connect_tries > 0){
       max_connect_tries--;
