@@ -2994,6 +2994,7 @@ bool spark_internal_connect(){
   Serial.println("SHAKE");
 
 #endif
+      pClient.stop();
       spark_connect_pending = false;
       return false;
     }
