@@ -328,6 +328,8 @@ int blocking_send(const unsigned char *buf, int length)
 
   #endif
   int byte_count = pClient.write(buf, length);
+  yield();
+
   #ifdef DEBUG_SETUP
     Serial.println(byte_count);
     Serial.println((millis()-start)/1000);
@@ -364,6 +366,9 @@ int blocking_receive(unsigned char *buf, int length)
 {
   if(!spark_connected())
     return -1;
+
+  yield();
+
   #ifdef DEBUG_SETUP
   Serial.println("BLRECV");
 
