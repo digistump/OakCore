@@ -2407,11 +2407,12 @@ bool event_loop(CoAPMessageType::Enum message_type, uint32_t timeout)
 bool event_loop()
   {
     CoAPMessageType::Enum message;
-    bool res = true;
-    while(res && pClient.available() >= 2) {
+    bool res;
+    do {
       res = event_loop(message);
       yield();
-    }
+    }while(res && pClient.available() >= 2);
+
     return res;
   }
 
