@@ -2397,7 +2397,7 @@ bool event_loop(CoAPMessageType::Enum message_type, uint32_t timeout)
             return false;
         if (msgtype==message_type)
             return true;
-        // todo - ideally need a delay here
+        yield();
     }
     while ((millis()-start) < timeout);
     return false;
@@ -2407,7 +2407,12 @@ bool event_loop(CoAPMessageType::Enum message_type, uint32_t timeout)
 bool event_loop()
   {
     CoAPMessageType::Enum message;
-    return event_loop(message);
+    bool res = true;
+    while(res && pClient.available() >= 2) {
+      res = event_loop(message);
+      yield();
+    }
+    return res;
   }
 
 
