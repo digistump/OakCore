@@ -2408,10 +2408,11 @@ bool event_loop()
   {
     CoAPMessageType::Enum message;
     bool res;
+    uint32_t start = millis();
     do {
       res = event_loop(message);
       yield();
-    }while(res && pClient.available() >= 2);
+    }while(res && pClient.available() >= 2 && (millis()-start) < 20);
 
     return res;
   }
