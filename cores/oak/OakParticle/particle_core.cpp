@@ -1068,7 +1068,7 @@ int description(unsigned char *buf, unsigned char token,
       sprintf(number_buffer,"%d",deviceConfig->system_version);
       appender.append(number_buffer);
       appender.append(",\"d\":[]},{\"s\":1040368,\"l\":\"m\",\"vc\":30,\"vv\":30,\"u\":\"0\",\"f\":\"u\",\"n\":\"1\",\"v\":1,\"d\":[{\"f\":\"s\",\"n\":\"1\",\"v\":");
-      sprintf(number_buffer,"%d",OAK_SYSTEM_VERSION_INTEGER);
+      sprintf(number_buffer,"%d",deviceConfig->system_version);
       appender.append(number_buffer);
       appender.append(",\"_\":\"\"}]}]");
     }
@@ -1722,12 +1722,12 @@ bool handle_update_begin(msg& message)
             #ifdef DEBUG_SETUP
               Serial.println("F4");
             #endif
-            if (deviceConfig->system_version < OAK_SYSTEM_VERSION_INTEGER || deviceConfig->system_update_pending > 0){
+            /*if (deviceConfig->system_version < OAK_SYSTEM_VERSION_INTEGER || deviceConfig->system_update_pending > 0){
               if(deviceConfig->system_update_pending == 0){
                 deviceConfig->system_update_pending = 1;
                 writeDeviceConfig();
               }
-            }
+            }*/
               //else if(deviceConfig->system_update_pending == 1){
               //  set_oakboot_defaults(0);
               //  deviceConfig->system_update_pending = 2;
@@ -2739,9 +2739,11 @@ bool particle_handshake(){
   spark_send_event("spark/hardware/ota_chunk_size", buf, 60, PRIVATE, NULL);
 
   ///if we want to be able to get a system update we need to send that we are in safe more right now
+  /*
   if (deviceConfig->system_version < OAK_SYSTEM_VERSION_INTEGER || deviceConfig->system_update_pending > 0){
     spark_send_event("spark/device/safemode" "", "", 60, PRIVATE, NULL);
   }
+  */
 
 /*
   #if defined(SPARK_SUBSYSTEM_EVENT_NAME)
