@@ -54,6 +54,7 @@ static const uint8_t MISO  = 8;
 static const uint8_t SCK   = 9;
 
 static const uint8_t BUILTIN_LED = 1;
+static const uint8_t LED_BUILTIN = 1;
 
 static const uint8_t A0 = 17;
                               ///0, 1, 2, 3, 4, 5, 6,  7,  8,  9,  10, 11
