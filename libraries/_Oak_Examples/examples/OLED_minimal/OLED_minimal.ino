@@ -9,28 +9,29 @@ Modified for Oak by Digistump
 
 #include <Wire.h>
 #include "font.h"
+
 #define OLED_address  0x3c                           // all the OLED's I have seen have this address
 
 uint8_t offset = 0;
 
-void setup(void) {
+void setup(void) 
+{
+  Wire.begin();                                // Initialise I2C 
+  
+  init_OLED();                                 // Initailise the OLED Display
+  reset_display();                             // Make sure the display is blank
 
-  Wire.begin();                                // Initialize I2C and OLED Display
-  init_OLED();                                    // 
-  reset_display();
-                                // Start the server 
-  clear_display();
+  //clear_display();                           // Reset does this, so no need to do twice
 
-  delay(3000);
+  delay(3000);                                 // Give things time to settle
 
-
-  sendStrXY("OLED ready!",4,0);              // OLED first message 
-
+  sendStrXY("OLED ready!",4,0);                // Display a message on the OLED!
 }
 
-
-void loop(void) {
-                       // checks for incoming messages
+// empty loop function as everything is done in setup
+// normally we would have our continously running stuff here
+void loop(void) 
+{
 }
 
 //==========================================================//
@@ -126,7 +127,7 @@ static void setXY(unsigned char row,unsigned char col)
 
 //==========================================================//
 // Prints a string regardless the cursor position.
-static void sendStr(char *string)
+static void sendStr(char const* string)
 {
   unsigned char i=0;
   while(*string)
@@ -142,7 +143,7 @@ static void sendStr(char *string)
 //==========================================================//
 // Prints a string in coordinates X Y, being multiples of 8.
 // This means we have 16 COLS (0-15) and 8 ROWS (0-7).
-static void sendStrXY( char *string, int X, int Y)
+static void sendStrXY(char const* string, int X, int Y)
 {
   setXY(X,Y);
   unsigned char i=0;
@@ -208,5 +209,4 @@ static void init_OLED(void)
   sendcommand(0x00);            //Set Memory Addressing Mode ab Horizontal addressing mode
   //  sendcommand(0x02);         // Set Memory Addressing Mode ab Page addressing mode(RESET)  
 }
-
 
