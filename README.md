@@ -1,7 +1,5 @@
 ## You must update your Arduino Oak package to 1.0.0+ via the boards manager! 
 
-**Due to bugs in the Arduino 1.6.6 and 1.6.7 IDEs we strongly suggest using 1.6.5r2 (for all boards not just ours)**
-
 **If you previously used an earlier Beta please do a factory reset here: http://github.com/digistump/OakRestore**
 
 **MAKE SURE YOU USE THE LATEST OakSoftAP - force a browser refresh before using**
