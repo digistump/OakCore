@@ -33,7 +33,6 @@ static long toggle_counts[AVAILABLE_TONE_PINS] = { 0, };
 void t1IntHandler();
 
 static int8_t toneBegin(uint8_t _pin) {
-  _pin = esp8266_pinToGpio[_pin];
   int8_t _index = -1;
 
   // if we're already using the pin, reuse it.
@@ -57,7 +56,6 @@ static int8_t toneBegin(uint8_t _pin) {
 
 // frequency (in hertz) and duration (in milliseconds).
 void tone(uint8_t _pin, unsigned int frequency, unsigned long duration) {
-  _pin = esp8266_pinToGpio[_pin];
   int8_t _index;
 
   _index = toneBegin(_pin);
@@ -84,7 +82,12 @@ void tone(uint8_t _pin, unsigned int frequency, unsigned long duration) {
         timer1_isr_init();
         timer1_attachInterrupt(t1IntHandler);
         timer1_enable(TIM_DIV1, TIM_EDGE, TIM_LOOP);
-        timer1_write((clockCyclesPerMicrosecond() * 500000) / frequency);
+        if (frequency == 0) {
+          timer1_write((clockCyclesPerMicrosecond() * 500000));
+        }
+        else {
+          timer1_write((clockCyclesPerMicrosecond() * 500000) / frequency);
+        }
         break;
     }
   }
@@ -105,7 +108,6 @@ void disableTimer(uint8_t _index) {
 }
 
 void noTone(uint8_t _pin) {
-  _pin = esp8266_pinToGpio[_pin];
   for (int i = 0; i < AVAILABLE_TONE_PINS; i++) {
     if (tone_pins[i] == _pin) {
       tone_pins[i] = 255;
