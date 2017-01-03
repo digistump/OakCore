@@ -225,6 +225,9 @@ char* strdup(const char *str) {
 double strtod(const char* str, char** endptr) {
     double result = 0.0;
     double factor = 1.0;
+    bool exp_factor = 1;      //default 1 - positive exponent. Use 0 for negative
+    double exponent = 0;
+    double multiplier = 1;    //multiplier for exponent
     bool decimals = false;
     char c;
 
@@ -252,21 +255,50 @@ double strtod(const char* str, char** endptr) {
             continue;
         }
 
-        int d = c - '0';
-        if(d < 0 || d > 9) {
-            break;
+        if (c == 'e' || c == 'E') {
+            str++;
+            if(*str == '-') {
+                exp_factor = 0;
+                str++;
+            } else if(*str == '+') {
+                str++;
+            }
+            while (c = *str) {      //this while loop for the exponent
+                int d = c - '0';
+                if (d < 0 || d > 9) {
+                    break;
+                }
+                exponent = exponent * 10 + d; 
+                str++;
+            }
         }
-
-        result = 10.0 * result + d;
-        if(decimals) {
-            factor *= 0.1;
+        
+        else {
+          int d = c - '0';
+          if(d < 0 || d > 9) {
+              break;
+          }
+  
+          result = 10.0 * result + d;
+          if(decimals) {
+              factor *= 0.1;
+          }
+  
+          str++;
         }
-
-        str++;
     }
     if (endptr) *endptr = (char*) str;
-    return result * factor;
+    result *= factor;
+
+    if (exponent) {
+      multiplier = pow(10, exponent); 
+      if (exp_factor) result *= multiplier;
+      else result /= multiplier;
+    }
+
+    return result;
 }
+
 
 // ##########################################################################
 //                             ctype functions
