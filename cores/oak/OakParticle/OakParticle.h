@@ -118,7 +118,13 @@ public:
     }
 
     template<typename T>
-    static bool variable(const T *varKey, const String *userVar, const particle_core::CloudVariableTypeString& userVarType);
+    static inline bool variable(const T *varKey, const String *userVar, const particle_core::CloudVariableTypeString& userVarType)
+    {
+        particle_core::spark_variable_t extra;
+        extra.size = sizeof(extra);
+        extra.update = update_string_variable;
+        return CLOUD_FN(spark_variable(varKey, userVar, particle_core::CloudVariableTypeString::value(), &extra), false);
+    }
 
     template<typename T>
     static inline bool variable(const T *varKey, const String &userVar, const particle_core::CloudVariableTypeString& userVarType)

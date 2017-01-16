@@ -7,14 +7,6 @@ using namespace particle_core;
 CloudClass::CloudClass(){
     spark_initConfig(false);
 }
-template<typename T>
-bool CloudClass::variable(const T *varKey, const String *userVar, const CloudVariableTypeString& userVarType)
-{
-    spark_variable_t extra;
-    extra.size = sizeof(extra);
-    extra.update = update_string_variable;
-    return CLOUD_FN(spark_variable(varKey, userVar, CloudVariableTypeString::value(), &extra), false);
-}
 
 bool CloudClass::function(const char *funcKey, user_function_int_str_t* func)
 {
