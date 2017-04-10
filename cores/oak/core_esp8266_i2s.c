@@ -219,7 +219,7 @@ void ICACHE_FLASH_ATTR i2s_begin(){
   
   pinMode(esp8266_gpioToPin[2], FUNCTION_1); //I2SO_WS (LRCK)
   pinMode(esp8266_gpioToPin[3], FUNCTION_1); //I2SO_DATA (SDIN)
-  pinMode(esp8266_gpioToPin[5], FUNCTION_1); //I2SO_BCK (SCLK)
+  pinMode(esp8266_gpioToPin[15], FUNCTION_1); //I2SO_BCK (SCLK)
   
   I2S_CLK_ENABLE();
   I2SIC = 0x3F;
