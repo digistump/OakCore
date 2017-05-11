@@ -24,6 +24,7 @@
 
 unsigned char twi_dcount = 18;
 static unsigned char twi_sda, twi_scl;
+static uint32_t twi_clockStretchLimit;
 
 #define SDA_LOW()   (GPES = (1 << twi_sda)) //Enable SDA (becomes output and since GPO is 0 for the pin, it will pull the line low)
 #define SDA_HIGH()  (GPEC = (1 << twi_sda)) //Disable SDA (becomes input and since it has pullup it will go high)
@@ -37,9 +38,9 @@ static unsigned char twi_sda, twi_scl;
 #endif
 
 #if F_CPU == FCPU80
-#define TWI_CLOCK_STRETCH 800
+#define TWI_CLOCK_STRETCH_MULTIPLIER 3
 #else
-#define TWI_CLOCK_STRETCH 1600
+#define TWI_CLOCK_STRETCH_MULTIPLIER 6
 #endif
 
 void twi_setClock(unsigned int freq){
@@ -60,12 +61,17 @@ void twi_setClock(unsigned int freq){
 #endif
 }
 
+void twi_setClockStretchLimit(uint32_t limit){
+  twi_clockStretchLimit = limit * TWI_CLOCK_STRETCH_MULTIPLIER;
+}
+
 void twi_init(unsigned char sda, unsigned char scl){
   twi_sda = esp8266_pinToGpio[sda];
   twi_scl = esp8266_pinToGpio[scl];
   pinMode(sda, INPUT_PULLUP);
   pinMode(scl, INPUT_PULLUP);
   twi_setClock(100000);
+  twi_setClockStretchLimit(230); // default value is 230 uS
 }
 
 void twi_stop(void){
@@ -98,7 +104,7 @@ static bool twi_write_stop(void){
   SDA_LOW();
   twi_delay(twi_dcount);
   SCL_HIGH();
-  while (SCL_READ() == 0 && (i++) < TWI_CLOCK_STRETCH);// Clock stretching (up to 100us)
+  while (SCL_READ() == 0 && (i++) < twi_clockStretchLimit);// Clock stretching (up to 100us)
   twi_delay(twi_dcount);
   SDA_HIGH();
   twi_delay(twi_dcount);
@@ -113,7 +119,7 @@ static bool twi_write_bit(bool bit) {
   else SDA_LOW();
   twi_delay(twi_dcount+1);
   SCL_HIGH();
-  while (SCL_READ() == 0 && (i++) < TWI_CLOCK_STRETCH);// Clock stretching (up to 100us)
+  while (SCL_READ() == 0 && (i++) < twi_clockStretchLimit);// Clock stretching (up to 100us)
   twi_delay(twi_dcount);
   return true;
 }
@@ -124,7 +130,7 @@ static bool twi_read_bit(void) {
   SDA_HIGH();
   twi_delay(twi_dcount+2);
   SCL_HIGH();
-  while (SCL_READ() == 0 && (i++) < TWI_CLOCK_STRETCH);// Clock stretching (up to 100us)
+  while (SCL_READ() == 0 && (i++) < twi_clockStretchLimit);// Clock stretching (up to 100us)
   bool bit = SDA_READ();
   twi_delay(twi_dcount);
   return bit;
@@ -189,4 +195,19 @@ unsigned char twi_readFrom(unsigned char address, unsigned char* buf, unsigned i
     twi_delay(twi_dcount);
   }
   return 0;
+}
+
+uint8_t twi_status(){           
+    if (SCL_READ()==0)     return I2C_SCL_HELD_LOW;       		//SCL held low by another device, no procedure available to recover
+    int clockCount = 20;                   
+
+    while (SDA_READ()==0 && clockCount>0){                      //if SDA low, read the bits slaves have to sent to a max
+        twi_read_bit();                    
+        if (SCL_READ()==0) return I2C_SCL_HELD_LOW_AFTER_READ;  //I2C bus error. SCL held low beyond slave clock stretch time
+    }
+
+    if (SDA_READ()==0)     return I2C_SDA_HELD_LOW;       		//I2C bus error. SDA line held low by slave/another_master after n bits.
+
+    if(!twi_write_start()) return I2C_SDA_HELD_LOW_AFTER_INIT;  //line busy. SDA again held low by another device. 2nd master?
+    else                   return I2C_OK;       				//all ok 
 }
