@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  particle-compiler:
+    build: .
+    image: particle-cloud-compiler:latest
+    volumes:
+      # Mount input and output directories
+      - ./example_input:/workspace/input:ro
+      - ./example_output:/workspace/output
+    # Override default command with specific input/output/platform
+    command: ["/workspace/input", "/workspace/output", "photon"]

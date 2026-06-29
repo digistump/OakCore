@@ -1,0 +1,4 @@
+[env:photon]
+platform = particle
+board = photon
+framework = particle
