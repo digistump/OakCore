@@ -171,6 +171,11 @@ bool FS::format() {
     if (!_impl) {
         return false;
     }
+    // Safety: Only allow format if filesystem is mounted/initialized
+    if (!_impl->begin()) {
+        // Filesystem not mounted, refuse to format to avoid bricking
+        return false;
+    }
     return _impl->format();
 }
 
@@ -308,10 +313,18 @@ bool mount<FS>(FS& fs, const char* mountPoint) {
         return false;
     }
 
-    !make sure mountPoint has trailing '/' here
+    // Ensure mountPoint has trailing '/' to avoid path ambiguity
+    String mountPath = mountPoint;
+    if (!mountPath.endsWith("/")) {
+        mountPath += "/";
+    }
 
     MountEntry* entry = new MountEntry;
     entry->fs = p;
+    entry->path = mountPath;
+    entry->next = s_mounted;
+    s_mounted = entry;
+    return true;
     entry->path = mountPoint;
     entry->next = s_mounted;
     s_mounted = entry;
